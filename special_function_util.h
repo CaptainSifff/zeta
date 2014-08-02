@@ -36,9 +36,9 @@
 #ifndef _GLIBCXX_TR1_SPECIAL_FUNCTION_UTIL_H
 #define _GLIBCXX_TR1_SPECIAL_FUNCTION_UTIL_H 1
 
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-namespace tr1
+// namespace std _GLIBCXX_VISIBILITY(default)
+// {
+namespace mytr1
 {
   namespace __detail
   {
@@ -129,7 +129,7 @@ namespace tr1
   _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 }
-}
+//}
 
 #endif // _GLIBCXX_TR1_SPECIAL_FUNCTION_UTIL_H
 
