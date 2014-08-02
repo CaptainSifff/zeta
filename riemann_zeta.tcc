@@ -44,9 +44,9 @@
 
 #include "special_function_util.h"
 
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-namespace tr1
+// namespace std _GLIBCXX_VISIBILITY(default)
+// {
+namespace mytr1
 {
   // [5.2] Special functions
 
@@ -397,6 +397,7 @@ namespace tr1
       return __zeta;
     }
 
+#include "hurwitz_zeta.h"
 
     /**
      *   @brief  Return the Hurwitz zeta function @f$ \zeta(x,s) @f$
@@ -414,11 +415,16 @@ namespace tr1
     template<typename _Tp>
     inline _Tp
     __hurwitz_zeta(_Tp __a, _Tp __s)
-    { return __hurwitz_zeta_glob(__a, __s); }
+    {
+      if (arg(__s) != 0.0 )
+	return __hurwitz_zeta_glob(__a, __s);
+      else
+	return hurwitz_zeta(real(__s), __a); 
+    }
 
   _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace std::tr1::__detail
 }
-}
+//}
 
 #endif // _GLIBCXX_TR1_RIEMANN_ZETA_TCC
