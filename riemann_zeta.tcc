@@ -188,17 +188,13 @@ namespace tr1
       for (unsigned int __i = 1; __i < __maxit; ++__i)
         {
           bool __punt = false;
-          _Tp __sgn = _Tp(1);
-          _Tp __term = _Tp(0);
+          _Tp __sgn = _Tp(-1);
+          _Tp __term = _Tp(1.0);
 	  _Tp __bincoeff = _Tp(1);
-          for (unsigned int __j = 0; __j <= __i; ++__j)
+          for (unsigned int __j = 1; __j <= __i; ++__j)
             {
-	      _Tp incr = _Tp(1.0);
-		if(__j != 0)
-		{
-		  incr = static_cast<_Tp>(__i - __j + 1)/__j;
-		  __bincoeff *= incr;
-		}
+	      _Tp incr = static_cast<_Tp>(__i - __j + 1)/__j;
+	      __bincoeff *= incr;
               __term += __sgn * __bincoeff * std::pow(_Tp(1 + __j), -__s);
               __sgn *= _Tp(-1);
 	      if(__bincoeff > (std::numeric_limits<_Tp>::max()/incr) )//approximate the possible overflow with what we have already
