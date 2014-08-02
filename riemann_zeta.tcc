@@ -182,43 +182,43 @@ namespace tr1
             }
         }
 
-      _Tp __num = _Tp(0.5L);
+      _Tp __num = _Tp(0.5L*0.5L);
       const unsigned int __maxit = 10000;
-      for (unsigned int __i = 0; __i < __maxit; ++__i)
+      __zeta = _Tp(0.5L);//zeroth order contribution
+      for (unsigned int __i = 1; __i < __maxit; ++__i)
         {
           bool __punt = false;
           _Tp __sgn = _Tp(1);
           _Tp __term = _Tp(0);
+	  _Tp __bincoeff = _Tp(1);
           for (unsigned int __j = 0; __j <= __i; ++__j)
             {
-#if _GLIBCXX_USE_C99_MATH_TR1
-              _Tp __bincoeff =  std::lgamma(_Tp(1 + __i))
-                              - std::lgamma(_Tp(1 + __j))
-                              - std::lgamma(_Tp(1 + __i - __j));
-#else
-              _Tp __bincoeff =  __log_gamma(_Tp(1 + __i))
-                              - __log_gamma(_Tp(1 + __j))
-                              - __log_gamma(_Tp(1 + __i - __j));
-#endif
-              if (__bincoeff > __max_bincoeff)
-                {
-                  //  This only gets hit for x << 0.
-                  __punt = true;
-                  break;
-                }
-              __bincoeff = std::exp(__bincoeff);
+	      _Tp incr = _Tp(1.0);
+		if(__j != 0)
+		{
+		  incr = static_cast<_Tp>(__i - __j + 1)/__j;
+		  __bincoeff *= incr;
+		}
               __term += __sgn * __bincoeff * std::pow(_Tp(1 + __j), -__s);
               __sgn *= _Tp(-1);
+	      if(__bincoeff > (std::numeric_limits<_Tp>::max()/incr) )//approximate the possible overflow with what we have already
+	      {
+		//  This only gets hit for x << 0.
+		__punt = true;
+		break;
+	      }
             }
           if (__punt)
             break;
           __term *= __num;
           __zeta += __term;
           if (std::abs(__term/__zeta) < __eps)
+	  {
+//	    std::cout<<" i = "<<__i<<std::endl;
             break;
+	  }
           __num *= _Tp(0.5L);
         }
-
       __zeta /= _Tp(1) - std::pow(_Tp(2), _Tp(1) - __s);
 
       return __zeta;
