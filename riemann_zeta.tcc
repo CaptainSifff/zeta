@@ -184,19 +184,17 @@ namespace tr1
 
       _Tp __num = _Tp(0.5L*0.5L);
       const unsigned int __maxit = 10000;
-      __zeta = _Tp(0.5L);//zeroth order contribution
+      __zeta = _Tp(0.5L);//zeroth order contribution already calculated
       for (unsigned int __i = 1; __i < __maxit; ++__i)
         {
           bool __punt = false;
-          _Tp __sgn = _Tp(-1);
           _Tp __term = _Tp(1.0);
 	  _Tp __bincoeff = _Tp(1);
           for (unsigned int __j = 1; __j <= __i; ++__j)
             {
 	      _Tp incr = static_cast<_Tp>(__i - __j + 1)/__j;
-	      __bincoeff *= incr;
-              __term += __sgn * __bincoeff * std::pow(_Tp(1 + __j), -__s);
-              __sgn *= _Tp(-1);
+	      __bincoeff *= -incr;
+              __term += __bincoeff * std::pow(_Tp(1 + __j), -__s);
 	      if(__bincoeff > (std::numeric_limits<_Tp>::max()/incr) )//approximate the possible overflow with what we have already
 	      {
 		//  This only gets hit for x << 0.
@@ -209,10 +207,7 @@ namespace tr1
           __term *= __num;
           __zeta += __term;
           if (std::abs(__term/__zeta) < __eps)
-	  {
-//	    std::cout<<" i = "<<__i<<std::endl;
             break;
-	  }
           __num *= _Tp(0.5L);
         }
       __zeta /= _Tp(1) - std::pow(_Tp(2), _Tp(1) - __s);
