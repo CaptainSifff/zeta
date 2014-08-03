@@ -78,7 +78,7 @@ inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType
   {
     wgamma *= wq * (s + 1.0 - 2*k) * (s + 2.0 - 2*k);
     newterm = mytr1::__detail::__riemann_zeta(static_cast<FPType> (2*k) ) * wgamma;
-    std::cout<<k<<" "<<newterm<<" "<< std::endl;
+//    std::cout<<k<<" "<<newterm<<" "<< std::endl;
     if(std::abs(newterm) > std::abs(oldterm)) terminate = true;//termination due to failure of asymptotic expansion
     if(fpequal(std::abs(res + 2.0* newterm), std::abs(res))) terminate = true; // precision goal reached.
     if(k > maxiter) terminate = true;//stop the iteration somewhen
@@ -111,17 +111,17 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
 	else if (1 == nu)
 	  return -std::log(1.0 - std::exp(w));
 	else if (nu > 1)
-	{//FIXME: check for real or non-real argument. asymptotic expansions
+	{//FIXME: check for real or non-real argument.
 	  /*The reductions of the imaginary part yield the same the same results as Mathematica then.
 	   * Necessary to improve the speed of convergence
 	   */
-	  if(real(w) < 15)
+	  if(real(w) < 15.0)//arbitrary transition point...
 	  {
 	    while (w.imag() > M_PI) w = std::complex<FPType>(w.real(), w.imag() - 2.0*M_PI);
 	    while (w.imag() <= -M_PI) w = std::complex<FPType>(w.real(), w.imag() + 2.0*M_PI);
-// 	  if (fpequal(arg(w), 0.0) || fpequal(arg(w), 2.0*M_PI))
-// 	    return mytr1::__detail::__riemann_zeta(s);
-// 	  else
+	  if (w == 0.0)//catch the case of the PolyLog evaluated evaluated at e^0
+	    return mytr1::__detail::__riemann_zeta(s);
+	  else
 	    return PolyLog_Exp_pos(static_cast<uint>(nu) , w);
 	  }
 	  else
@@ -136,20 +136,30 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
 	  return PolyLog_Exp_neg(s, w);//no asymptotic expansion available...
       }
       else
-      {//FIXME: check for real or non-real argument. asymptotic expansions
+      {//FIXME: check for real or non-real argument.
+	if(real(w) < 15.0)//arbitrary transition point
+	{
 	  /*The reductions of the imaginary part yield the same the same results as Mathematica then.
 	   * Necessary to improve the speed of convergence
 	   */
-	while (w.imag() > M_PI) w = std::complex<FPType>(w.real(), w.imag() - 2.0*M_PI);//branch cuts??
-	while (w.imag() <= -M_PI) w = std::complex<FPType>(w.real(), w.imag() + 2.0*M_PI);
-	if (s < 0)
-	  return PolyLog_Exp_neg(s, w);
+	  while (w.imag() > M_PI) w = std::complex<FPType>(w.real(), w.imag() - 2.0*M_PI);//branch cuts??
+	  while (w.imag() <= -M_PI) w = std::complex<FPType>(w.real(), w.imag() + 2.0*M_PI);
+	  if (s < 0)
+	    return PolyLog_Exp_neg(s, w);
+	  else
+	    {
+	  if (w == 0.0)//catch the case of the PolyLog evaluated evaluated at e^0
+	    return mytr1::__detail::__riemann_zeta(s);
+	  else
+	      return PolyLog_Exp_pos(s, w);
+	}
+	}
 	else
 	{
-// 	  if (fpequal(arg(w), 0.0) || fpequal(arg(w), 2.0*M_PI))
-// 	    return mytr1::__detail::__riemann_zeta(s);
-// 	  else
-	    return PolyLog_Exp_pos(s, w);
+	  //wikipedia says that this is required for Wood's formula
+	  while (w.imag() > 0) w = std::complex<FPType>(w.real(), w.imag() - 2.0*M_PI);
+	  while (w.imag() <= -2.0*M_PI) w = std::complex<FPType>(w.real(), w.imag() + 2.0*M_PI);
+	  return PolyLog_Exp_asym(s,w);
 	}
       }
     }
