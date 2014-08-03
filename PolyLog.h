@@ -55,6 +55,9 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
 /** This function implements the asymptotic series for the PolyLog.
  * It is given by 2 \sum \limits_{k=0}^\infty \zeta(2k) w^{s-2k}/Gamma(s-2k+1) -i \pi w^(s-1)/Gamma(s)
  * for Re(w) >> 1
+ * Don't check this against Mathematica 8. 
+ * For real x the imaginary part of the PolyLog is given by Im(Li_s(e^u)) = - \pi u^{s-1}/Gamma(s)
+ * Check this relation for any benchmark that you use.
  * @param s the index s
  * @param w
  */
