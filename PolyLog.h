@@ -147,6 +147,58 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType> w)
 {//positive s
+  std::cout<<"Series for real positive s"<<std::endl;
+  std::complex<FPType> res = mytr1::__detail::__riemann_zeta(s);
+      std::complex<FPType> wpower = w;
+      FPType fac = 1.0;
+      uint m = static_cast<uint>(std::floor(s));
+      for (uint k = 1; k <= m; ++k)
+      {
+	res += wpower*fac*mytr1::__detail::__riemann_zeta(static_cast<FPType>(s - k));
+	wpower *= w;
+	FPType temp = 1.0/(1.0 + k);
+	fac *= temp;
+      }
+      //fac should be 1/(m+1)!
+      res += std::tgamma(1-s)*std::pow(-w, s-1);
+      const FPType tp = 2.0 * M_PI;
+      const FPType pref = 2.0 * std::pow(tp, s-1);
+      //now comes the remainder of the series
+      const unsigned int maxit = 100;
+      unsigned int j = 0;
+      bool terminate = false;
+      std::complex<FPType> wup = w/tp;
+      std::complex<FPType> w2 = std::pow(wup, m+1);
+      std::complex<FPType> gam = std::tgamma(2.0-s+m)*fac; //here we factor up the ratio of Gamma(1 - s + k)/k! . This ratio should be well behaved even for large k
+      FPType sp, cp;
+      sincos(M_PI/2.0 * s, &sp, &cp);
+      while (!terminate)//assume uniform convergence
+      {//FIXME: optimize.
+	int idx = m + 1 + j;
+	FPType zetaarg = 1 + idx - s;
+	FPType sine;
+	if(idx & 1)//save the reperated calculation of the sines
+	{/*odd*/
+	  sine = cp;
+	  if ( !((idx-1)/ 2 & 1) )
+	    sine = -sine;
+	}
+	else
+	{/*even*/
+	  sine = sp;
+	  if((idx/2) & 1)
+	    sine = -sine;
+	}
+	std::complex<FPType> nextterm = (mytr1::__detail::__riemann_zeta(zetaarg) * sine * gam) * w2;
+//	std::cout<<j<<" "<<nextterm<<" used Gamma = "<<gam<<std::endl;
+	w2 *= wup;
+	gam *= zetaarg/(1.0 + idx);
+	++j;
+	terminate = (fpequal( std::abs(res + pref*nextterm), std::abs(res) ) || (j > maxit));
+	res += pref * nextterm;
+      }
+      std::cout<<"Iterations in PolyLogExp_pos: "<<j<<std::endl;
+      return res;
 }
 
 /** This function implements the asymptotic series for the PolyLog.
