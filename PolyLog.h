@@ -52,6 +52,41 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
 {//positive s
 }
 
+/** This function implements the asymptotic series for the PolyLog.
+ * It is given by 2 \sum \limits_{k=0}^\infty \zeta(2k) w^{s-2k}/Gamma(s-2k+1) -i \pi w^(s-1)/Gamma(s)
+ * for Re(w) >> 1
+ * @param s the index s
+ * @param w
+ */
+template <typename FPType>
+inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType> w)
+{//asymptotic expansion
+  std::complex<FPType> wgamma = std::pow(w, s-1.0)/std::tgamma(s);/*wgamma = w^(s-1)/Gamma(s)*/
+  std::complex<FPType> res = std::complex<FPType>(0.0, -M_PI)* wgamma;
+  wgamma *= w/s;/*wgamma = w^s / Gamma(s+1)*/
+  constexpr uint maxiter = 100;
+  bool terminate = false;
+  std::complex<FPType> oldterm = -0.5*wgamma; /*zeta(0) * w^s / Gamma(s+1)*/
+  res += 2.0 * oldterm;
+  std::complex<FPType> newterm;
+  std::complex<FPType> wq = 1.0/(w*w);
+  uint k = 1;
+  while (!terminate)
+  {
+    wgamma *= wq * (s + 1.0 - 2*k) * (s + 2.0 - 2*k);
+    newterm = mytr1::__detail::__riemann_zeta(static_cast<FPType> (2*k) ) * wgamma;
+//    std::cout<<k<<" "<<newterm<<" "<< std::endl;
+    if(std::abs(newterm) > std::abs(oldterm)) terminate = true;//termination due to failure of asymptotic expansion
+    if(fpequal(std::abs(res + 2.0* newterm), std::abs(res))) terminate = true; // precision goal reached.
+    if(k > maxiter) terminate = true;//stop the iteration somewhen
+    res += 2.0*newterm;
+    oldterm = newterm;
+    ++k;
+  }
+  std::cout<<"Iterations: "<<k<<std::endl;
+  return res;
+}
+
 /** This is the Frontend function which calculates Li_s( e^w )
  * @param s the index s
  * @param w complex w
