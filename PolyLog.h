@@ -82,9 +82,12 @@ inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType
     if(std::abs(newterm) > std::abs(oldterm)) terminate = true;//termination due to failure of asymptotic expansion
     if(fpequal(std::abs(res + 2.0* newterm), std::abs(res))) terminate = true; // precision goal reached.
     if(k > maxiter) terminate = true;//stop the iteration somewhen
-    res += 2.0*newterm;
-    oldterm = newterm;
-    ++k;
+    if(!terminate)
+    {
+      res += 2.0*newterm;
+      oldterm = newterm;
+      ++k;
+    }
   }
   std::cout<<"Iterations: "<<k<<std::endl;
   return res;
