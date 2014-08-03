@@ -9,3 +9,7 @@ David C. Wood,
 The computation of Polylogarithms
 
 Other sources are the wikipedia.
+
+ideas:
+- Use Kahan summation for improved stability. The runtime will likely be dominated by function evluations.
+- Use a Table of values of Riemann Zeta at Integer values.
