@@ -78,6 +78,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<F
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_neg(const unsigned int s, std::complex<FPType> w)
 {//negative integer s
+  //no specialization yet present
 }
 
 /** This function catches the cases of negative real index s
@@ -217,40 +218,52 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp(const FPType s, FPType w)
-    {
-      if (fpequal<FPType>(std::rint(s), s))
-      {//capture the cases of positive integer index
-	int nu = static_cast<int> (lrint(s));
-	if(0 == nu)
-	{
-	  FPType t = std::exp(w);
-	  return t/(1.0 - t);
-	}
-	else if (1 == nu)
-	  return -std::log(1.0 - std::exp(w));
-	else if (nu > 1)
-	{//FIXME: check for real or non-real argument. asymptotic expansions
-// 	  if (fpequal(arg(w), 0.0) || fpequal(arg(w), 2.0*M_PI))
-// 	    return mytr1::__detail::__riemann_zeta(s);
-// 	  else
-	    return PolyLog_Exp(static_cast<uint>(nu) , w);
-	}
-	else
-	  return PolyLog_Exp_neg(s, w);
-      }
-      else
-      {//FIXME: check for real or non-real argument. asymptotic expansions
-	if (s < 0)
-	  return PolyLog_Exp_neg(s, w);
-	else
-	{
-// 	  if (fpequal(arg(w), 0.0) || fpequal(arg(w), 2.0*M_PI))
-// 	    return mytr1::__detail::__riemann_zeta(s);
-// 	  else
-	    return PolyLog_Exp_pos(s, w);
-	}
-      }
+{
+    if (fpequal<FPType>(std::rint(s), s))
+    {   //capture the cases of positive integer index
+        int nu = static_cast<int> (lrint(s));
+        if(0 == nu)
+        {
+            FPType t = std::exp(w);
+            return t/(1.0 - t);
+        }
+        else if (1 == nu)
+            return -std::log(1.0 - std::exp(w));
+        else if (nu > 1)
+        {
+            if(real(w) < 15.0)//arbitrary transition point...
+            {
+                if (w == 0.0)//catch the case of the PolyLog evaluated evaluated at e^0
+                    return mytr1::__detail::__riemann_zeta(s);
+                else
+                    return PolyLog_Exp_pos(static_cast<uint>(nu) , w);
+            }
+            else
+            {
+                return PolyLog_Exp_asym(s,w);//FIXME: the series should terminate after a finite number of terms.
+            }
+        }
+        else
+            return PolyLog_Exp_neg(s, w);
     }
+    else
+    {
+        if(real(w) < 15.0)//arbitrary transition point
+        {
+            if (s < 0)
+                return PolyLog_Exp_neg(s, w);
+            else
+            {
+                if (w == 0.0)//catch the case of the PolyLog evaluated evaluated at e^0
+                    return mytr1::__detail::__riemann_zeta(s);
+                else
+                    return PolyLog_Exp_pos(s, w);
+            }
+        }
+        else
+            return PolyLog_Exp_asym(s,w);
+    }
+}
 
 /** A function to implement the PolyLog in those cases where we can calculate it.
  * @param s The index s
