@@ -12,4 +12,5 @@ Other sources are the wikipedia.
 
 ideas:
 - Use Kahan summation for improved stability. The runtime will likely be dominated by function evluations.
-- Use a Table of values of Riemann Zeta at Integer values.
+- Use a table of values of Riemann Zeta at Integer values.
+- norm(z) vs. abs(z) abs on complex numbers involves a sqrt. whereas abs on reals is just an if().
