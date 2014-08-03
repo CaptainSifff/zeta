@@ -23,6 +23,52 @@ bool fpequal(const FPType& a, const FPType& b)
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<FPType> w)
 {//positive integer s
+      std::cout<<"Integer Series for positive s"<<std::endl;
+      std::complex<FPType> res = mytr1::__detail::__riemann_zeta(static_cast<FPType>(s));//optimization possibility: s are positive integers
+      std::complex<FPType> wpower = w;
+      FPType fac = 1.0;
+      FPType harmonicN = 1.0;//HarmonicNumber_1
+      for (uint k = 1; k <= s-2; ++k)
+      {
+	res += wpower*fac*mytr1::__detail::__riemann_zeta(static_cast<FPType>(s - k));
+	wpower *= w;
+	FPType temp = 1.0/(1.0 + k);
+	fac *= temp;
+	harmonicN += temp;
+      }
+      //harmonicN now contains H_{s-1}
+      //fac should be 1/(n-1)!
+      res += (harmonicN - std::log(-w))*wpower*fac;
+      wpower *= w;
+      fac /= s;
+      res -= wpower*fac/2.0;
+      wpower *= w;
+      //now comes the remainder of the series.
+      const FPType tp = 2.0 * M_PI;
+      const std::complex<FPType> pref = wpower/M_PI/tp;
+      const unsigned int maxit = 200;
+      unsigned int j = 1;
+      bool terminate = false;
+      fac /= (s+1.0);//(1/(n+1)!)
+      res -= M_PI*M_PI/6.0*fac * pref; //subtract the zeroth order term.
+      //remainder of series
+      fac *= 3.0*2.0/(s + 2.0)/(s+3.0);
+      std::complex<FPType> upfac = -(w/tp)*(w/tp);
+      std::complex<FPType> w2 = upfac;
+      while (!terminate)//assume uniform convergence
+      {
+        FPType rzarg = static_cast<FPType>(2*j+2);
+        FPType rz = mytr1::__detail::__riemann_zeta(rzarg);
+//        std::cout<<rz<<" "<<fac<<" "<<w2<<std::endl;
+	std::complex<FPType> nextterm = (rz*fac)*w2;
+	w2 *= upfac;
+	fac *= rzarg/(rzarg + s) * (rzarg+1.0)/(rzarg + s + 1.0);
+	++j;
+	terminate = (fpequal( std::abs(res - pref*nextterm), std::abs(res) ) || (j > maxit));
+	res -= pref * nextterm;
+      }
+      std::cout<<"Iterations in Integer Series: "<<j<<std::endl;
+      return res;
 }
 
 /** This function catches the cases of negative integer index s
@@ -64,6 +110,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType> w)
 {//asymptotic expansion
+  std::cout<<"asymptotic expansions"<<std::endl;
   std::complex<FPType> wgamma = std::pow(w, s-1.0)/std::tgamma(s);/*wgamma = w^(s-1)/Gamma(s)*/
   std::complex<FPType> res = std::complex<FPType>(0.0, -M_PI)* wgamma;
   wgamma *= w/s;/*wgamma = w^s / Gamma(s+1)*/
