@@ -260,7 +260,7 @@ inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
 {
-    if(fpequal(real(w), 0.0) && (fpequal(imag(w), 0.0) || fpequal(imag(w), 2.0*M_PI)))//catch the case of the PolyLog evaluated evaluated at e^0
+    if(fpequal(real(w), 0.0) && (fpequal(imag(w), 0.0) || fpequal(imag(w), 2.0*M_PI)))//catch the case of the PolyLog evaluated evaluated at e^0 FIXME: higher multiples of 2 pi
     {
         if (s > 1.0)
             return mytr1::__detail::__riemann_zeta(s);
@@ -298,16 +298,29 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
         }
         else
 	{
-	  if ((-nu) & 1)
+	  if (( ((-nu) & 1) == 0) && fpequal(real(w), 0.0))
+	  {
+	    FPType ip = imag(w);//get imaginary part
+	    while (ip <= -M_PI) ip += 2.0*M_PI;
+	    while (ip > M_PI) ip -= 2.0*M_PI;
+	    if(fpequal(ip, M_PI))
+	      return 0.0;//Li_{-n}(-1) + (-1)^n Li_{-n}(1/-1) = 0 
+	    else
+	    {
+	      PolyLog_Exp_neg(s, w);//no asymptotic expansion available...
+	    }
+	  }
+	  else
+//	  if ((-nu) & 1)
 	    return PolyLog_Exp_neg(s, w);//no asymptotic expansion available...
-	    else return 0.0;//Li_{-mn}(1) + (-1)^n Li_{-n}(1) = 0 
+//	    else return 0.0;//Li_{-n}(1) + (-1)^n Li_{-n}(1) = 0 
 	}
     }
     else
     {   //FIXME: check for real or non-real argument.
         if(real(w) < 15.0)//arbitrary transition point
         {
-            /*The reductions of the imaginary part yield the same the same results as Mathematica then.
+            /*The reductions of the imaginary part yield the same results as Mathematica then.
              * Necessary to improve the speed of convergence
              */
             while (w.imag() > M_PI) w = std::complex<FPType>(w.real(), w.imag() - 2.0*M_PI);//branch cuts??
@@ -358,10 +371,8 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, FPType w)
             else
                 return PolyLog_Exp_asym(s,w);//FIXME: the series should terminate after a finite number of terms.
         }
-        else
-	  if ((-nu) & 1)
+        else//e^w with real w is always a positive quantity
 	    return PolyLog_Exp_neg(s, w);//no asymptotic expansion available...
-	    else return 0.0;//Li_{-mn}(1) + (-1)^n Li_{-n}(1) = 0 
     }
     else
     {
