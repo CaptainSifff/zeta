@@ -71,20 +71,6 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<F
     return res;
 }
 
-/** This function catches the cases of negative integer index s
- * @param s the index s
- * @param w
- */
-template <typename FPType>
-inline std::complex<FPType> PolyLog_Exp_neg(const int s, std::complex<FPType> w)
-{//negative integer s
-  if ((-s)% 4 == 0 )//Divisible by four. Then the sine in the resulting sines is occasionaly zero...
-  {
-  }
-  else
-    return PolyLog_Exp_neg(s, w);
-}
-
 /** This function catches the cases of negative real index s
  * @param s the index s
  * @param w
@@ -148,6 +134,22 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
     }
     std::cout<<"Iterations in PolyLogExp_neg: "<<j<<std::endl;
     return res;
+}
+
+/** This function catches the cases of negative integer index s
+ * @param s the index s
+ * @param w
+ */
+template <typename FPType>
+inline std::complex<FPType> PolyLog_Exp_neg(const int s, std::complex<FPType> w)
+{//negative integer s
+  std::cout<<"Negative integer s"<<std::endl;
+  if ((-s)% 4 == 0 )//Divisible by four. Then the sine in the resulting sines is occasionaly zero...
+  {
+    PolyLog_Exp_neg(static_cast<FPType>(s), w);//no asymptotic expansion available...
+  }
+  else
+    return PolyLog_Exp_neg(static_cast<FPType>(s), w);
 }
 
 /** This function catches the cases of positive real index s
@@ -307,12 +309,12 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
 	      return 0.0;//Li_{-n}(-1) + (-1)^n Li_{-n}(1/-1) = 0 
 	    else
 	    {
-	      PolyLog_Exp_neg(s, w);//no asymptotic expansion available...
+	      PolyLog_Exp_neg(nu, w);//no asymptotic expansion available...
 	    }
 	  }
 	  else
 //	  if ((-nu) & 1)
-	    return PolyLog_Exp_neg(s, w);//no asymptotic expansion available...
+	    return PolyLog_Exp_neg(nu, w);//no asymptotic expansion available...
 //	    else return 0.0;//Li_{-n}(1) + (-1)^n Li_{-n}(1) = 0 
 	}
     }
