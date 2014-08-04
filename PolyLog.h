@@ -355,7 +355,9 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, FPType w)
                 return PolyLog_Exp_asym(s,w);//FIXME: the series should terminate after a finite number of terms.
         }
         else
-            return PolyLog_Exp_neg(s, w);
+	  if ((-nu) & 1)
+	    return PolyLog_Exp_neg(s, w);//no asymptotic expansion available...
+	    else return 0.0;//Li_{-mn}(1) + (-1)^n Li_{-n}(1) = 0 
     }
     else
     {
