@@ -18,6 +18,7 @@ inline std::complex<FPType> hurwitz_zeta(const FPType s, std::complex<FPType> a)
 	FPType t = 1.0-s;
 	std::complex<FPType> lpe = PolyLog_Exp(t, std::complex<FPType>(0.0, tp)/*== 2 pi I */ * a );
 	//FIXME: This prefactor is prone to overflow
+	//FIXME: positive integer orders s ??? 
 	return std::tgamma(t)* std::pow(tp, -t)* ( std::exp(std::complex<FPType>(0.0, -M_PI/2.0 * t)) * lpe + std::exp(std::complex<FPType>(0.0, M_PI/2.0 * t)) * conj(lpe) );
       }
       else 
