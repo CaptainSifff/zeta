@@ -98,6 +98,12 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
     std::complex<FPType> gam = std::tgamma(1.0-s); //here we factor up the ratio of Gamma(1 - s + k)/k! . This ratio should be well behaved even for large k
 
     FPType sp, cp;
+    if (fpequal<FPType>(std::rint(s), s) && (std::lrint(s) % 4 == 0))//A crude fix for today...
+    {
+      sp = 0;
+      cp = 1;
+    }
+    else
     sincos(M_PI/2.0 * s, &sp, &cp);
     //Here we add the expression that would result from ignoring the zeta function in the series.
     std::complex<FPType> expis(cp, sp);
@@ -129,11 +135,11 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
                 sine = -sine;
         }
         std::complex<FPType> nextterm =  w2 * gam * (sine * rz);
-//	std::cout<<j<<" "<<nextterm<<" "<<rz<<std::endl;
+//	std::cout<<j<<" "<<nextterm<<" "<<rz<<" "<<sine<<std::endl;
         w2 *= wup;
         ++j;
         gam  *= rzarg/(j);//equal to 1/(j+1) since we have incremented j in the line above
-        terminate = (fpequal( std::abs(res + pref*nextterm), std::abs(res) ) || (j > maxit)) && !fpequal(std::abs(rz), 0.0);/*this last check is necessary at integer s*/
+        terminate = (fpequal( std::abs(res + pref*nextterm), std::abs(res) ) || (j > maxit)) && !fpequal(std::abs(sine*rz), 0.0);/*this last check is necessary at integer s*/
         res += pref*nextterm;
     }
     std::cout<<"Iterations in PolyLogExp_neg: "<<j<<std::endl;
@@ -287,7 +293,11 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
             }
         }
         else
-            return PolyLog_Exp_neg(s, w);//no asymptotic expansion available...
+	{
+	  if ((-nu) & 1)
+	    return PolyLog_Exp_neg(s, w);//no asymptotic expansion available...
+	    else return 0.0;//Li_{-mn}(1) + (-1)^n Li_{-n}(1) = 0 
+	}
     }
     else
     {   //FIXME: check for real or non-real argument.
