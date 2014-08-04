@@ -75,11 +75,15 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<F
  * @param s the index s
  * @param w
  */
-// template <typename FPType>
-// inline std::complex<FPType> PolyLog_Exp_neg(const unsigned int s, std::complex<FPType> w)
-// {//negative integer s
-//   //no specialization yet present
-// }
+template <typename FPType>
+inline std::complex<FPType> PolyLog_Exp_neg(const int s, std::complex<FPType> w)
+{//negative integer s
+  if ((-s)% 4 == 0 )//Divisible by four. Then the sine in the resulting sines is occasionaly zero...
+  {
+  }
+  else
+    return PolyLog_Exp_neg(s, w);
+}
 
 /** This function catches the cases of negative real index s
  * @param s the index s
