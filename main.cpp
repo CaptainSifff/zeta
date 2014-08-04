@@ -19,16 +19,18 @@ int main(int argc, char **argv) {
 //       ;//between 1 and 10 riemann_zeta_glob is called
 // //      <<std::endl;
 //     }
-/*  std::cout<<mytr1::__detail::__hurwitz_zeta_glob(5.0, 2.0)<<std::endl;
-  std::cout<<mytr1::__detail::hurwitz_zeta(5.0, std::complex<FPType>(2.0))<<std::endl;*/
-std::cout<<mytr1::__detail::PolyLog_Exp(2.5, std::complex<FPType>(15,1.0))<<std::endl;
-for(uint k = 0; k < 32; ++k)
-{
-  std::cout<<"=======  "<<k<<"  =========="<<std::endl;
-  std::cout<<mytr1::__detail::PolyLog_Exp(4.0, std::complex<FPType>(0.0, 2.0*M_PI * k/32.0))<<std::endl;
-std::cout<<mytr1::__detail::PolyLog_Exp(-4.0, std::complex<FPType>(0.0, 2.0*M_PI * k/32.0))<<std::endl;
-std::cout<<mytr1::__detail::PolyLog_Exp(2.6, std::complex<FPType>(0.0, 2.0*M_PI * k/32.0))<<std::endl;
-std::cout<<mytr1::__detail::PolyLog_Exp(-2.6, std::complex<FPType>(0.0, 2.0*M_PI * k/32.0))<<std::endl;
-}
+
+/*something that didn't work in the original implementation*/
+  std::cout<<mytr1::__detail::__hurwitz_zeta_glob(5.1, 0.5)<<std::endl;
+  std::cout<<mytr1::__detail::hurwitz_zeta(5.1, std::complex<FPType>(0.5))<<std::endl;
+// std::cout<<mytr1::__detail::PolyLog_Exp(2.5, std::complex<FPType>(15,1.0))<<std::endl;
+// for(uint k = 0; k < 32; ++k)
+// {
+//   std::cout<<"=======  "<<k<<"  =========="<<std::endl;
+//   std::cout<<mytr1::__detail::PolyLog_Exp(4.0, std::complex<FPType>(0.0, 2.0*M_PI * k/32.0))<<std::endl;
+// std::cout<<mytr1::__detail::PolyLog_Exp(-4.0, std::complex<FPType>(0.0, 2.0*M_PI * k/32.0))<<std::endl;
+// std::cout<<mytr1::__detail::PolyLog_Exp(2.6, std::complex<FPType>(0.0, 2.0*M_PI * k/32.0))<<std::endl;
+// std::cout<<mytr1::__detail::PolyLog_Exp(-2.6, std::complex<FPType>(0.0, 2.0*M_PI * k/32.0))<<std::endl;
+// }
     return 0;
 }
