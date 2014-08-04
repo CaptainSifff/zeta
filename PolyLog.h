@@ -136,6 +136,16 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
     return res;
 }
 
+
+/** This function catches the cases of negative integer index s which are multiples of four.
+ * @param n the index n = 4k
+ * @param w
+ */
+template <typename FPType>
+inline std::complex<FPType> PolyLog_Exp_neg_four(const int n, std::complex<FPType> w)
+{
+}
+
 /** This function catches the cases of negative integer index s
  * @param s the index s
  * @param w
