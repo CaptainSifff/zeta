@@ -144,6 +144,8 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_neg_four(const int n, std::complex<FPType> w)
 {
+  std::cout<<"Negative integer s = -4k"<<std::endl;
+  return PolyLog_Exp_neg(static_cast<FPType>(n), w);
 }
 
 /** This function catches the cases of negative integer index s
@@ -153,11 +155,8 @@ inline std::complex<FPType> PolyLog_Exp_neg_four(const int n, std::complex<FPTyp
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_neg(const int s, std::complex<FPType> w)
 {//negative integer s
-  std::cout<<"Negative integer s"<<std::endl;
   if ((-s)% 4 == 0 )//Divisible by four. Then the sine in the resulting sines is occasionaly zero...
-  {
-    PolyLog_Exp_neg(static_cast<FPType>(s), w);//no asymptotic expansion available...
-  }
+    return PolyLog_Exp_neg_four(s, w);
   else
     return PolyLog_Exp_neg(static_cast<FPType>(s), w);
 }
