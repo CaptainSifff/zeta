@@ -288,6 +288,31 @@ inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType
     return res;
 }
 
+/**
+ * Theoretical convergence for Re(w) < 0. Seems to beat the other expansions for Re(w) < -pi/2 - pi/5
+ */
+template <typename FPType>
+std::complex<FPType> Poly_log_exp_negative_real_part(FPType s, std::complex<FPType> w)
+{
+  std::cout<<"negative real part series (exponential)"<<std::endl;
+  std::complex<FPType> ew = std::exp(w);
+  std::complex<FPType> up = ew;
+  std::complex<FPType> res = ew;
+  uint maxiter = 500;
+  bool terminate = false;
+  uint k = 2;
+  while(!terminate)
+  {
+    ew *= up;
+    std::complex<FPType> newterm = std::pow(k, -s) * ew;
+    terminate = (fpequal(std::abs(res + newterm), std::abs(res))) || (k > maxiter);
+    res += newterm;
+    ++k;
+  }
+  std::cout<<"iterations in Poly_log_exp_negative_real_part: "<<k<<std::endl;
+  return res;
+}
+
 /** This is the Frontend function which calculates Li_s( e^w )
  * @param s the index s
  * @param w complex w
