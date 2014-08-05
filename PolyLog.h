@@ -152,7 +152,6 @@ inline std::complex<FPType> PolyLog_Exp_neg_four(const int n, std::complex<FPTyp
 {
   std::cout<<"Negative integer s = -4k"<<std::endl;
   std::complex<FPType> res = std::tgamma(1-n)*std::pow(-w, n-1);
-  std::cout<<res<<std::endl;
   constexpr FPType tp = 2.0 * M_PI;
   std::complex<FPType> wup = w/tp;
   std::complex<FPType> wq = wup*wup;
@@ -165,18 +164,15 @@ inline std::complex<FPType> PolyLog_Exp_neg_four(const int n, std::complex<FPTyp
   bool terminate = false;
   uint maxit = 300;
   FPType gam = std::tgamma(2-n);
-  std::complex<FPType> temp = 0;
   while(!terminate)
   {
     std::complex<FPType> newterm = ( gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(2 + 2*k - n)) - 1.0)) * wup;
-    temp += newterm;
     gam *= - static_cast<FPType>(2 + 2*k -n + 1) / (2*k + 1 + 2) * static_cast<FPType>(2 + 2*k -n) / (2 * k + 1 + 1);
     wup *= wq;
     terminate = (fpequal( std::abs(res - pref*newterm), std::abs(res) ) || (k > maxit));
     res -= pref*newterm;
     ++k;
   }
-  std::cout<<"temp: "<<temp<<std::endl;
   std::cout<<"Iterations in the series for s = -4n : "<<k<<std::endl;
   return res;
 }
