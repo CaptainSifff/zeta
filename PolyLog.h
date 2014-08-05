@@ -152,26 +152,32 @@ inline std::complex<FPType> PolyLog_Exp_neg_four(const int n, std::complex<FPTyp
 {
   std::cout<<"Negative integer s = -4k"<<std::endl;
   std::complex<FPType> res = std::tgamma(1-n)*std::pow(-w, n-1);
+  std::cout<<res<<std::endl;
   constexpr FPType tp = 2.0 * M_PI;
   std::complex<FPType> wup = w/tp;
   std::complex<FPType> wq = wup*wup;
   FPType pref = std::pow(tp, n)/M_PI;
-  res -= std::tgamma(1-n)* pref * std::pow(1.0 + wq, -0.5 + n/2) * std::cos( static_cast<FPType>(1-n) * std::atan(1.0/wup));//subtract  the expression A_p(w)
-  std::cout<<res<<std::endl;
+  res -= std::tgamma(1-n)* pref * std::pow(1.0 + wq, -0.5 + n/2) * 
+  std::sin( static_cast<FPType>(1-n) * (M_PI/2-std::atan(1.0/wup)));//subtract  the expression A_p(w)
+  //using the sine here yields better results...
+//  std::cos( static_cast<FPType>(1-n) * std::atan(1.0/wup));//subtract  the expression A_p(w)
   uint k = 0;
   bool terminate = false;
   uint maxit = 300;
   FPType gam = std::tgamma(2-n);
+  std::complex<FPType> temp = 0;
   while(!terminate)
   {
     std::complex<FPType> newterm = ( gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(2 + 2*k - n)) - 1.0)) * wup;
+    temp += newterm;
     gam *= - static_cast<FPType>(2 + 2*k -n + 1) / (2*k + 1 + 2) * static_cast<FPType>(2 + 2*k -n) / (2 * k + 1 + 1);
     wup *= wq;
     terminate = (fpequal( std::abs(res - pref*newterm), std::abs(res) ) || (k > maxit));
     res -= pref*newterm;
     ++k;
   }
-  std::cout<<"Iterations in the series for s = -4n: "<<k<<std::endl;
+  std::cout<<"temp: "<<temp<<std::endl;
+  std::cout<<"Iterations in the series for s = -4n : "<<k<<std::endl;
   return res;
 }
 
@@ -182,7 +188,7 @@ inline std::complex<FPType> PolyLog_Exp_neg_four(const int n, std::complex<FPTyp
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_neg(const int s, std::complex<FPType> w)
 {//negative integer s
-  if ((-s)% 4 == 0 )//Divisible by four. Then the sine in the resulting sines is occasionaly zero...
+  if ((-s)% 4 == 0 )//Divisible by four. Then the sine in the resulting series is occasionaly zero...
     return PolyLog_Exp_neg_four(s, w);
   else
     return PolyLog_Exp_neg(static_cast<FPType>(s), w);
