@@ -150,10 +150,10 @@ inline std::complex<FPType> PolyLog_Exp_neg_four(const int n, std::complex<FPTyp
   std::complex<FPType> wup = w/tp;
   std::complex<FPType> wq = wup*wup;
   FPType pref = std::pow(tp, n)/M_PI;
-  res -= std::tgamma(1-n)* pref * std::pow(1.0 + wq, -0.5 + n/2) * 
-  std::sin( static_cast<FPType>(1-n) * (M_PI/2-std::atan(1.0/wup)));//subtract  the expression A_p(w)
+  res += std::tgamma(1-n)* pref * std::pow(1.0 + wq, -0.5 + n/2) * 
+//  std::sin( static_cast<FPType>(1-n) * (M_PI/2-std::atan(1.0/wup)));//subtract  the expression A_p(w)
   //using the sine here yields better results...
-//  std::cos( static_cast<FPType>(1-n) * std::atan(1.0/wup));//subtract  the expression A_p(w)
+  std::cos( static_cast<FPType>(1-n) * std::atan(1.0/wup));//subtract  the expression A_p(w)
   uint k = 0;
   bool terminate = false;
   uint maxit = 300;
