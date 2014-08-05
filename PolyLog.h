@@ -99,7 +99,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
     std::complex<FPType> expis(cp, sp);
     std::complex<FPType> p = tp - std::complex<FPType>(0.0, 1.0) * w;
     std::complex<FPType> q = tp + std::complex<FPType>(0.0, 1.0) * w;
-    res += std::complex<FPType>(0.0, 1.0) * gam * (conj(expis) * std::pow(p, s-1.0) - expis *std::pow(q, s-1.0));//this can be optimized for real values
+    res += std::complex<FPType>(0.0, 1.0) * gam * (conj(expis) * std::pow(p, s-1.0) - expis *std::pow(q, s-1.0));//this can be optimized for real values of w
     //The above expression is the result of sum_k Gamma(1+k-s) /k! * sin(pi /2* (s-k)) * (w/2/pi)^k
     //Therefore we only need to sample values of zeta(n) on the real axis that really differ from one
     res += pref * sp * gam * (mytr1::__detail::__riemann_zeta(1-s) - 1.0);
@@ -136,8 +136,14 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
     return res;
 }
 
-
-/** This function catches the cases of negative integer index s which are multiples of four.
+/** This function catches the cases of negative integer index s which are multiples of four. In that case the sine occuring in the expansion 
+ * occasionally takes on the value zero. We use that to provide an optimized series for p = -4n:
+ * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} - A_p(w) - B_p(w)
+ * with
+ * A_p(w) = -2 / \sqrt{2 \pi} (-p)! / (2 \pi)^(-p/2) (1 + w^2/(4 pi^2))^{-1/2 + p/2} cos((1 - p) ArcTan(2 pi/ w))
+ * and 
+ * B_p(w) = - (2 pi)^p / pi * \sum \limits_{k = 0}^\infty \Gamma(2 + 2k - p)/ (2k+1)! (-1)^k (w/2/\pi)^(2k+1) (Zeta(2 + 2k - p) - 1.0)
+ * suitable for |w| < 2 pi
  * @param n the index n = 4k
  * @param w
  */
@@ -145,7 +151,28 @@ template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_neg_four(const int n, std::complex<FPType> w)
 {
   std::cout<<"Negative integer s = -4k"<<std::endl;
-  return PolyLog_Exp_neg(static_cast<FPType>(n), w);
+  std::complex<FPType> res = std::tgamma(1-n)*std::pow(-w, n-1);
+  constexpr FPType tp = 2.0 * M_PI;
+  std::complex<FPType> wup = w/tp;
+  std::complex<FPType> wq = wup*wup;
+  FPType pref = std::pow(tp, n)/M_PI;
+  res -= std::tgamma(1-n)* pref * std::pow(1.0 + wq, -0.5 + n/2) * std::cos( static_cast<FPType>(1-n) * std::atan(1.0/wup));//subtract  the expression A_p(w)
+  std::cout<<res<<std::endl;
+  uint k = 0;
+  bool terminate = false;
+  uint maxit = 300;
+  FPType gam = std::tgamma(2-n);
+  while(!terminate)
+  {
+    std::complex<FPType> newterm = ( gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(2 + 2*k - n)) - 1.0)) * wup;
+    gam *= - static_cast<FPType>(2 + 2*k -n + 1) / (2*k + 1 + 2) * static_cast<FPType>(2 + 2*k -n) / (2 * k + 1 + 1);
+    wup *= wq;
+    terminate = (fpequal( std::abs(res - pref*newterm), std::abs(res) ) || (k > maxit));
+    res -= pref*newterm;
+    ++k;
+  }
+  std::cout<<"Iterations in the series for s = -4n: "<<k<<std::endl;
+  return res;
 }
 
 /** This function catches the cases of negative integer index s
@@ -271,7 +298,7 @@ inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
 {
-    if(fpequal(real(w), 0.0) && (fpequal(imag(w), 0.0) || fpequal(imag(w), 2.0*M_PI)))//catch the case of the PolyLog evaluated evaluated at e^0 FIXME: higher multiples of 2 pi
+    if(fpequal(real(w), 0.0) && (fpequal(imag(w), 0.0) || fpequal(imag(w), 2.0*M_PI)))//catch the case of the PolyLog evaluated at e^0 FIXME: higher multiples of 2 pi
     {
         if (s > 1.0)
             return mytr1::__detail::__riemann_zeta(s);
@@ -318,7 +345,7 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
 	      return 0.0;//Li_{-n}(-1) + (-1)^n Li_{-n}(1/-1) = 0 
 	    else
 	    {
-	      PolyLog_Exp_neg(nu, w);//no asymptotic expansion available...
+	      return PolyLog_Exp_neg(nu, std::complex<FPType>(w.real(), w.imag()/*why does using ip not work here??*/ ));//no asymptotic expansion available... check the reduction
 	    }
 	  }
 	  else
