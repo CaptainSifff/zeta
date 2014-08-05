@@ -71,7 +71,8 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<F
     return res;
 }
 
-/** This function catches the cases of negative real index s
+/** This function catches the cases of negative real index s.
+ * Theoretical convergence is present for |w| < 2*pi.
  * @param s the index s
  * @param w
  */
@@ -104,7 +105,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
     while (!terminate)//assume uniform convergence
     {
         FPType rzarg = 1 + j - s;
-        FPType rz = (mytr1::__detail::__riemann_zeta(rzarg) - 1.0);//only the difference to one is needed
+        FPType rz = (mytr1::__detail::__riemann_zeta(rzarg) - 1.0);//only the difference to one is needed. FIXME: this expression underflows for rzarg > 50
         FPType sine;
         if(j & 1)//save the repeated recalculation of the sines
         {   /*odd*/
@@ -119,7 +120,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
                 sine = -sine;
         }
         std::complex<FPType> nextterm =  w2 * gam * (sine * rz);
-//	std::cout<<j<<" "<<nextterm<<" "<<rz<<" "<<sine<<std::endl;
+//	std::cout<<j<<" "<<nextterm<<" "<<rz<<" "<<std::endl;
         w2 *= wup;
         ++j;
         gam  *= rzarg/(j);//equal to 1/(j+1) since we have incremented j in the line above
@@ -313,11 +314,11 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
             return -std::log(1.0 - std::exp(w));
         else if (nu > 1)
         {   //FIXME: check for real or non-real argument.
-            /*The reductions of the imaginary part yield the same results as Mathematica.
-             * Necessary to improve the speed of convergence
-             */
             if(real(w) < 15.0)//arbitrary transition point...
             {
+	       /*The reductions of the imaginary part yield the same results as Mathematica.
+               * Necessary to improve the speed of convergence
+               */
                 while (w.imag() > M_PI) w = std::complex<FPType>(w.real(), w.imag() - 2.0*M_PI);
                 while (w.imag() <= -M_PI) w = std::complex<FPType>(w.real(), w.imag() + 2.0*M_PI);
                 return PolyLog_Exp_pos(static_cast<uint>(nu) , w);
