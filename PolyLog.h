@@ -313,6 +313,21 @@ std::complex<FPType> Poly_log_exp_negative_real_part(FPType s, std::complex<FPTy
   return res;
 }
 
+
+/** This is the Frontend function which calculates Li_s( e^w )
+ * Here the different series are chosen according to their covergence properties
+ * @param s the index s
+ * @param w complex w
+ */
+template <typename FPType>
+inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
+{
+  FPType rw = w.real();
+  FPType iw = w.imag();
+  if(rw < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
+    return Poly_log_exp_negative_real_part(s, w);
+}
+
 /** This is the Frontend function which calculates Li_s( e^w )
  * @param s the index s
  * @param w complex w
