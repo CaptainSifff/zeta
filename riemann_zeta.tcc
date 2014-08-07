@@ -155,8 +155,8 @@ namespace mytr1
 
       const _Tp __eps = std::numeric_limits<_Tp>::epsilon();
       //  Max e exponent before overflow.
-      const _Tp __max_bincoeff = std::numeric_limits<_Tp>::max_exponent10
-                               * std::log(_Tp(10)) - _Tp(1);
+      const _Tp __max_bincoeff = std::exp(std::numeric_limits<_Tp>::max_exponent10
+                               * std::log(_Tp(10)) - _Tp(1));
 
       //  This series works until the binomial coefficient blows up
       //  so use reflection.
@@ -188,19 +188,19 @@ namespace mytr1
       for (unsigned int __i = 1; __i < __maxit; ++__i)
         {
           bool __punt = false;
-          _Tp __term = _Tp(1.0);
+          _Tp __term = _Tp(1.0);//again the zeroth order
 	  _Tp __bincoeff = _Tp(1);
           for (unsigned int __j = 1; __j <= __i; ++__j)
             {
-	      _Tp incr = static_cast<_Tp>(__i - __j + 1)/__j;
+	      _Tp incr = _Tp(__i - __j + 1)/__j;
 	      __bincoeff *= -incr;
-              __term += __bincoeff * std::pow(_Tp(1 + __j), -__s);
-	      if(__bincoeff > (std::numeric_limits<_Tp>::max()/incr) )//approximate the possible overflow with what we have already
+	      if(std::fabs(__bincoeff) > __max_bincoeff )
 	      {
 		//  This only gets hit for x << 0.
 		__punt = true;
 		break;
 	      }
+	      __term += __bincoeff * std::pow(_Tp(1 + __j), -__s);
             }
           if (__punt)
             break;
