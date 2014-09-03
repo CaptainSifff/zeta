@@ -16,3 +16,4 @@ ideas:
 - Generally a function for zeta at the integers.
 - norm(z) vs. abs(z) abs on complex numbers involves a sqrt. whereas abs on reals is just an if().
 - replace checks against zeroes as checks against sth. like: smallest FPValue * epsilon
+- Better stability for large index s

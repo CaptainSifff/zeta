@@ -80,13 +80,17 @@ template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType> w)
 {   //basic general loop, but s is a negative quantity here
     //TODO: optimize/fix for the case of negative Integers
+    //FIXME Large s makes problems. The series should be rearrangeable so that we only need the ratio Gamma(1-s)/(2 pi)^s
     std::cout<<"Negative real s"<<std::endl;
-    std::complex<FPType> res = std::tgamma(1-s)*std::pow(-w, s-1);
+    std::complex<FPType> res = std::exp(std::lgamma(1-s) - (1-s) * std::log(-w));
     constexpr FPType tp = 2.0 * M_PI;
     const std::complex<FPType> wup = w/tp;
     std::complex<FPType> w2 = wup;
     std::complex<FPType> pref = std::pow(tp, s)/M_PI;
-    std::complex<FPType> gam = std::tgamma(1.0-s); //here we factor up the ratio of Gamma(1 - s + k)/k! . This ratio should be well behaved even for large k
+    //here we factor up the ratio of Gamma(1 - s + k)/k! .
+    //This ratio should be well behaved even for large k in the series afterwards
+    //Note that we have a problem for large s
+    std::complex<FPType> gam = std::tgamma(1.0-s);
 
     FPType sp, cp;
     sincos(M_PI/2.0 * s, &sp, &cp);
@@ -139,6 +143,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
  * and 
  * B_p(w) = - (2 pi)^p / pi * \sum \limits_{k = 0}^\infty \Gamma(2 + 2k - p)/ (2k+1)! (-1)^k (w/2/\pi)^(2k+1) (Zeta(2 + 2k - p) - 1.0)
  * suitable for |w| < 2 pi
+ * FIXME: somethings strange in here...
  * @param n the index n = 4k
  * @param w
  */
@@ -146,7 +151,7 @@ template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_neg_four(const int n, std::complex<FPType> w)
 {
   std::cout<<"Negative integer s = -4k"<<std::endl;
-  std::complex<FPType> res = std::tgamma(1-n)*std::pow(-w, n-1);
+  std::complex<FPType> res = std::exp(std::lgamma(1-n) - FPType(1-n) * std::log(-w));
   constexpr FPType tp = 2.0 * M_PI;
   std::complex<FPType> wup = w/tp;
   std::complex<FPType> wq = wup*wup;
@@ -205,7 +210,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
         fac *= temp;
     }
     //fac should be 1/(m+1)!
-    res += std::tgamma(1-s)*std::pow(-w, s-1);
+    res += std::exp(std::lgamma(1.0-s) - (1.0-s) * std::log(-w));
     const FPType tp = 2.0 * M_PI;
     const FPType pref = 2.0 * std::pow(tp, s-1);
     //now comes the remainder of the series
@@ -214,6 +219,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
     bool terminate = false;
     std::complex<FPType> wup = w/tp;
     std::complex<FPType> w2 = std::pow(wup, m+1);
+    //It is 1 < 2 - s + m < 2 => Gamma(2-s+m) will not overflow
     std::complex<FPType> gam = std::tgamma(2.0-s+m)*fac; //here we factor up the ratio of Gamma(1 - s + k)/k! . This ratio should be well behaved even for large k
     FPType sp, cp;
     sincos(M_PI/2.0 * s, &sp, &cp);
@@ -259,7 +265,7 @@ template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType> w)
 {   //asymptotic expansion
     std::cout<<"asymptotic expansions"<<std::endl;
-    std::complex<FPType> wgamma = std::pow(w, s-1.0)/std::tgamma(s);/*wgamma = w^(s-1)/Gamma(s)*/
+    std::complex<FPType> wgamma = std::exp((s-1.0)*std::log(w) - std::lgamma(s));/*wgamma = w^(s-1)/Gamma(s)*/
     std::complex<FPType> res = std::complex<FPType>(0.0, -M_PI)* wgamma;
     wgamma *= w/s;/*wgamma = w^s / Gamma(s+1)*/
     constexpr uint maxiter = 100;
