@@ -367,18 +367,20 @@ inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, std::complex<FPType
     if (( ((-s) & 1) == 0) && fpequal(real(w), 0.0))//odd s and w on the unit-circle
 	  {
 	    FPType iw = imag(w);//get imaginary part
-	    while (iw <= -M_PI) iw += 2.0*M_PI;
-	    while (iw > M_PI) iw -= 2.0*M_PI;
-	    if(fpequal(iw, M_PI))
-	      return 0.0;//Li_{-n}(-1) + (-1)^n Li_{-n}(1/-1) = 0 
+	    FPType rem = remainder(iw, 2.0*M_PI);
+	    if(fpequal(abs(rem), 0.5))
+	    {
+	      //Due to: Li_{-n}(-1) + (-1)^n Li_{-n}(1/-1) = 0 
+	      return 0.0;
+	    }
 	    else
 	    {
-	      return PolyLog_Exp_neg(s, std::complex<FPType>(w.real(), w.imag()/*why does using ip not work here??*/ ));//no asymptotic expansion available... check the reduction
+	      return PolyLog_Exp_neg(s, std::complex<FPType>(w.real(), rem));//no asymptotic expansion available... check the reduction
 	    }
 	  }
 	  else
 	  {
-    if(real(w) < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
+          if(real(w) < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
   {
     return Poly_log_exp_negative_real_part(s, w);
   }
@@ -404,10 +406,10 @@ inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, std::complex<FPType
 /* This is the case where s i s a positive real value.
  */
 template <typename FPType>
-inline std::complex<FPType> PolyLog_Exp_real_pos(const uint s, std::complex<FPType> w)
+inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, std::complex<FPType> w)
 {
-      FPType rw = w.real();
-  FPType iw = w.imag();
+    FPType rw = w.real();
+    FPType iw = w.imag();
     if(fpequal(rw, 0.0) && fpequal(remainder(iw, 2.0*M_PI), 0.0))
     {
         if (s > 1.0)
@@ -419,7 +421,7 @@ inline std::complex<FPType> PolyLog_Exp_real_pos(const uint s, std::complex<FPTy
   {
     return Poly_log_exp_negative_real_part(s, w);
   }
-  if(rw < 6)//arbitrary transition point
+  if(rw < 6.0)//arbitrary transition point
         {
             /*The reductions of the imaginary part yield the same results as Mathematica then.
              * Necessary to improve the speed of convergence
@@ -441,7 +443,7 @@ inline std::complex<FPType> PolyLog_Exp_real_pos(const uint s, std::complex<FPTy
  * Now we branch depending on the properties of w in the specific functions
  */
 template <typename FPType>
-inline std::complex<FPType> PolyLog_Exp_real_neg(const int s, std::complex<FPType> w)
+inline std::complex<FPType> PolyLog_Exp_real_neg(const FPType s, std::complex<FPType> w)
 {
   FPType rw = w.real();
   FPType iw = w.imag();
@@ -478,6 +480,7 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
   std::complex<FPType> ret;
   if (fpequal<FPType>(std::rint(s), s))
     {
+      //In this branch of the if statement, s is an integer
       uint p = uint(std::lrint(s));
       if(p > 0)
         ret = PolyLog_Exp_int_pos(p, w);
