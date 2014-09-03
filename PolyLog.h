@@ -322,7 +322,7 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, std::complex<FPTyp
   FPType iw = w.imag();
     if(fpequal(rw, 0.0) && fpequal(remainder(iw, 2.0*M_PI), 0.0))
     {
-        if (s > 1.0)
+        if (s > 1)
             return mytr1::__detail::__riemann_zeta(s);
         else
             return std::numeric_limits<FPType>::infinity();

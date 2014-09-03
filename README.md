@@ -13,5 +13,6 @@ Other sources are the wikipedia.
 ideas:
 - Use Kahan summation for improved stability. The runtime will likely be dominated by function evluations.
 - Use a table of values of Riemann Zeta at Integer values.
+- Generally a function for zeta at the integers.
 - norm(z) vs. abs(z) abs on complex numbers involves a sqrt. whereas abs on reals is just an if().
 - replace checks against zeroes as checks against sth. like: smallest FPValue * epsilon
