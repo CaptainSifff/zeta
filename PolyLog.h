@@ -322,10 +322,10 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, std::complex<FPTyp
   FPType iw = w.imag();
     if(fpequal(rw, 0.0) && fpequal(remainder(iw, 2.0*M_PI), 0.0))
     {
-//         if (s > 1.0)
+        if (s > 1.0)
             return mytr1::__detail::__riemann_zeta(s);
-//         else
-//             return std::numeric_limits<FPType>::infinity();
+        else
+            return std::numeric_limits<FPType>::infinity();
     }
         if(0 == s)
         {
@@ -468,7 +468,7 @@ inline std::complex<FPType> PolyLog_Exp_real_neg(const int s, std::complex<FPTyp
 }
 
 /** This is the Frontend function which calculates Li_s( e^w )
- * First we branch into different patrs depending on the properties of s
+ * First we branch into different parts depending on the properties of s
  * @param s the index s
  * @param w complex w
  */
@@ -478,7 +478,7 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
   std::complex<FPType> ret;
   if (fpequal<FPType>(std::rint(s), s))
     {
-      long int p = std::lrint(s);
+      uint p = uint(std::lrint(s));
       if(p > 0)
         ret = PolyLog_Exp_int_pos(p, w);
       else
@@ -495,93 +495,6 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
     }
     return ret;
 }
-
-// /** This is the Frontend function which calculates Li_s( e^w )
-//  * @param s the index s
-//  * @param w complex w
-//  */
-// template <typename FPType>
-// inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
-// {
-//     if(fpequal(real(w), 0.0) && (fpequal(imag(w), 0.0) || fpequal(imag(w), 2.0*M_PI)))//catch the case of the PolyLog evaluated at e^0 FIXME: higher multiples of 2 pi
-//     {
-//         if (s > 1.0)
-//             return mytr1::__detail::__riemann_zeta(s);
-//         else
-//             return std::numeric_limits<FPType>::infinity();
-//     }
-//     if (fpequal<FPType>(std::rint(s), s))
-//     {   //capture the cases of positive integer index
-//         int nu = static_cast<int> (lrint(s));
-//         if(0 == nu)
-//         {
-//             std::complex<FPType> t = std::exp(w);
-//             return t/(1.0 - t);
-//         }
-//         else if (1 == nu)
-//             return -std::log(1.0 - std::exp(w));
-//         else if (nu > 1)
-//         {   //FIXME: check for real or non-real argument.
-//             if(real(w) < 15.0)//arbitrary transition point...
-//             {
-// 	       /*The reductions of the imaginary part yield the same results as Mathematica.
-//                * Necessary to improve the speed of convergence
-//                */
-//                 while (w.imag() > M_PI) w = std::complex<FPType>(w.real(), w.imag() - 2.0*M_PI);
-//                 while (w.imag() <= -M_PI) w = std::complex<FPType>(w.real(), w.imag() + 2.0*M_PI);
-//                 return PolyLog_Exp_pos(static_cast<uint>(nu) , w);
-//             }
-//             else
-//             {
-//                 //wikipedia says that this is required for Wood's formula
-//                 while (w.imag() > 0) w = std::complex<FPType>(w.real(), w.imag() - 2.0*M_PI);
-//                 while (w.imag() <= -2.0*M_PI) w = std::complex<FPType>(w.real(), w.imag() + 2.0*M_PI);
-//                 return PolyLog_Exp_asym(s,w);//FIXME: the series should terminate after a finite number of terms.
-//             }
-//         }
-//         else
-// 	{
-// 	  if (( ((-nu) & 1) == 0) && fpequal(real(w), 0.0))
-// 	  {
-// 	    FPType ip = imag(w);//get imaginary part
-// 	    while (ip <= -M_PI) ip += 2.0*M_PI;
-// 	    while (ip > M_PI) ip -= 2.0*M_PI;
-// 	    if(fpequal(ip, M_PI))
-// 	      return 0.0;//Li_{-n}(-1) + (-1)^n Li_{-n}(1/-1) = 0 
-// 	    else
-// 	    {
-// 	      return PolyLog_Exp_neg(nu, std::complex<FPType>(w.real(), w.imag()/*why does using ip not work here??*/ ));//no asymptotic expansion available... check the reduction
-// 	    }
-// 	  }
-// 	  else
-// //	  if ((-nu) & 1)
-// 	    return PolyLog_Exp_neg(nu, w);//no asymptotic expansion available...
-// //	    else return 0.0;//Li_{-n}(1) + (-1)^n Li_{-n}(1) = 0 
-// 	}
-//     }
-//     else
-//     {   //FIXME: check for real or non-real argument.
-//         if(real(w) < 15.0)//arbitrary transition point
-//         {
-//             /*The reductions of the imaginary part yield the same results as Mathematica then.
-//              * Necessary to improve the speed of convergence
-//              */
-//             while (w.imag() > M_PI) w = std::complex<FPType>(w.real(), w.imag() - 2.0*M_PI);//branch cuts??
-//             while (w.imag() <= -M_PI) w = std::complex<FPType>(w.real(), w.imag() + 2.0*M_PI);
-//             if (s < 0)
-//                 return PolyLog_Exp_neg(s, w);
-//             else
-//                 return PolyLog_Exp_pos(s, w);
-//         }
-//         else
-//         {
-//             //wikipedia says that this is required for Wood's formula
-//             while (w.imag() > 0) w = std::complex<FPType>(w.real(), w.imag() - 2.0*M_PI);
-//             while (w.imag() <= -2.0*M_PI) w = std::complex<FPType>(w.real(), w.imag() + 2.0*M_PI);
-//             return PolyLog_Exp_asym(s,w);
-//         }
-//     }
-// }
 
 /** This is the Frontend function which calculates Li_s( e^w )
  * @param s the index s
