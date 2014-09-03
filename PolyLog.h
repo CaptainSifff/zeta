@@ -291,8 +291,8 @@ inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType
 /**
  * Theoretical convergence for Re(w) < 0. Seems to beat the other expansions for Re(w) < -pi/2 - pi/5
  */
-template <typename FPType>
-std::complex<FPType> Poly_log_exp_negative_real_part(FPType s, std::complex<FPType> w)
+template <typename FPType, typename PowerType>
+std::complex<FPType> Poly_log_exp_negative_real_part(PowerType s, std::complex<FPType> w)
 {
   std::cout<<"negative real part series (exponential)"<<std::endl;
   std::complex<FPType> ew = std::exp(w);
@@ -320,7 +320,7 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, std::complex<FPTyp
 {
     FPType rw = w.real();
   FPType iw = w.imag();
-    if(fpequal(rw, 0.0) && fpequal(remainder(iw, 2.0*M_PI), 0.0))
+    if(fpequal(rw, 0.0) && fpequal(std::remainder(iw, 2.0*M_PI), 0.0))
     {
         if (s > 1)
             return mytr1::__detail::__riemann_zeta(s);
@@ -354,7 +354,7 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, std::complex<FPTyp
                 //wikipedia says that this is required for Wood's formula
                 while (w.imag() > 0) w = std::complex<FPType>(w.real(), w.imag() - 2.0*M_PI);
                 while (w.imag() <= -2.0*M_PI) w = std::complex<FPType>(w.real(), w.imag() + 2.0*M_PI);
-                return PolyLog_Exp_asym(s, w);//FIXME: the series should terminate after a finite number of terms.
+                return PolyLog_Exp_asym(static_cast<FPType>(s), w);//FIXME: the series should terminate after a finite number of terms.
             }
         }
 }
@@ -367,8 +367,8 @@ inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, std::complex<FPType
     if (( ((-s) & 1) == 0) && fpequal(real(w), 0.0))//odd s and w on the unit-circle
 	  {
 	    FPType iw = imag(w);//get imaginary part
-	    FPType rem = remainder(iw, 2.0*M_PI);
-	    if(fpequal(abs(rem), 0.5))
+	    FPType rem = std::remainder(iw, 2.0*M_PI);
+	    if(fpequal(std::abs(rem), 0.5))
 	    {
 	      //Due to: Li_{-n}(-1) + (-1)^n Li_{-n}(1/-1) = 0 
 	      return 0.0;
@@ -398,7 +398,7 @@ inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, std::complex<FPType
                 //wikipedia says that this is required for Wood's formula
                 while (w.imag() > 0) w = std::complex<FPType>(w.real(), w.imag() - 2.0*M_PI);
                 while (w.imag() <= -2.0*M_PI) w = std::complex<FPType>(w.real(), w.imag() + 2.0*M_PI);
-                return PolyLog_Exp_asym(s, w);//FIXME: the series should terminate after a finite number of terms.
+                return PolyLog_Exp_asym(static_cast<FPType>(s), w);//FIXME: the series should terminate after a finite number of terms.
             }
 	  }
 }
@@ -410,7 +410,7 @@ inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, std::complex<FP
 {
     FPType rw = w.real();
     FPType iw = w.imag();
-    if(fpequal(rw, 0.0) && fpequal(remainder(iw, 2.0*M_PI), 0.0))
+    if(fpequal(rw, 0.0) && fpequal(std::remainder(iw, 2.0*M_PI), 0.0))
     {
         if (s > 1.0)
             return mytr1::__detail::__riemann_zeta(s);
