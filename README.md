@@ -17,3 +17,4 @@ ideas:
 - norm(z) vs. abs(z) abs on complex numbers involves a sqrt. whereas abs on reals is just an if().
 - replace checks against zeroes as checks against sth. like: smallest FPValue * epsilon
 - Better stability for large index s
+- We're evaluating the Zeta function on positive integers. Try to use an efficient series for the Bernoulli Numbers for that.
