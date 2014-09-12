@@ -139,9 +139,10 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
     return res;
 }
 
-/** This function catches the cases of negative integer index s which are multiples of four. In that case the sine occuring in the expansion 
- * occasionally takes on the value zero. We use that to provide an optimized series for p = -4n:
- * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} - A_p(w) - B_p(w)
+/** This function catches the cases of negative integer index s which are multiples of two. In that case the sine occuring in the expansion 
+ * occasionally takes on the value zero. We use that to provide an optimized series for p = 2n:
+ * Int the template parameter sigma we transport whether p = 4k (sigma = 1) or p = 4k + 2  (sigma = -1)
+ * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} - A_p(w) - sigma * B_p(w)
  * with
  * A_p(w) = (2\pi)^p/\pi (-p)! / (2 \pi)^(-p/2) (1 + w^2/(4 pi^2))^{-1/2 + p/2} cos((1 - p) ArcTan(2 pi/ w))
  * and 
@@ -150,28 +151,29 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
  * @param n the index n = 4k
  * @param w
  */
-template <typename FPType>
-inline std::complex<FPType> PolyLog_Exp_neg_four(const int n, std::complex<FPType> w)
+template <typename FPType, int sigma>
+inline std::complex<FPType> PolyLog_Exp_neg_two(const uint n, std::complex<FPType> w)
 {
-  std::cout<<"Negative integer s = -4k"<<std::endl;
-  std::complex<FPType> res = std::exp(std::lgamma(1-n) - FPType(1-n) * std::log(-w));
+  std::cout<<"Negative integer s = -2k"<<std::endl;
+  std::complex<FPType> res = std::exp(std::lgamma(1+n) - FPType(1+n) * std::log(-w));
   constexpr FPType tp = 2.0 * M_PI;
   std::complex<FPType> wup = w/tp;
   std::complex<FPType> wq = wup*wup;
-  FPType pref = std::pow(tp, n)/M_PI;
+  FPType pref = std::pow(tp, -int(n))/M_PI;
   //subtract  the expression A_p(w)
-  res -= std::exp(std::lgamma(1-n) - 0.5*(1-n)*std::log( 1.0 + wq)) * 
-  //  std::tgamma(1-n)* pref * std::pow(1.0 + wq, -0.5 + n/2) * //this might be a bit faster
+  res -= std::exp(std::lgamma(1+n) - 0.5*(1+n)*std::log( 1.0 + wq)) * 
   //Next, calculate and subtract  the series A_p(w)
-  pref * std::cos( static_cast<FPType>(1-n) * std::atan(1.0/wup));
-  int k = 0;
+  pref * std::cos( static_cast<FPType>(1+n) * std::atan(1.0/wup));
+  uint k = 0;
   bool terminate = false;
   constexpr uint maxit = 300;
-  FPType gam = std::tgamma(2-n);
+  FPType gam = std::tgamma(2+n);
+  if(sigma != 1)
+    pref = -pref;
   while(!terminate)
   {
-    std::complex<FPType> newterm = ( gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(2*k + 2 - n)) - 1.0)) * wup;
-    gam *= - static_cast<FPType>(2 * k + 2 -n + 1) / (2*k + 2 + 1) * static_cast<FPType>(2*k + 2 - n) / (2 * k + 1 + 1);
+    std::complex<FPType> newterm = ( gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(2*k + 2 + n)) - 1.0)) * wup;
+    gam *= - static_cast<FPType>(2 * k + 2 + n + 1) / (2*k + 2 + 1) * static_cast<FPType>(2*k + 2 + n) / (2 * k + 1 + 1);
     wup *= wq;
     terminate = (fpequal( std::abs(res - pref*newterm), std::abs(res) ) || (k > maxit));
     res -= pref*newterm;
@@ -188,10 +190,17 @@ inline std::complex<FPType> PolyLog_Exp_neg_four(const int n, std::complex<FPTyp
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_neg(const int s, std::complex<FPType> w)
 {//negative integer s
-  if ((-s)% 4 == 0 )//Divisible by four. Then the sine in the resulting series is occasionaly zero...
-    return PolyLog_Exp_neg_four(s, w);
-  else
-    return PolyLog_Exp_neg(static_cast<FPType>(s), w);
+  const uint n = -s;
+  switch(n%4)
+  {
+    case 0:
+      return PolyLog_Exp_neg_two<FPType, 1>(n, w);
+    case 1:
+    case 2:
+      return PolyLog_Exp_neg_two<FPType, -1>(n, w);
+    case 3:
+      break;
+  }
 }
 
 /** This function catches the cases of positive real index s
