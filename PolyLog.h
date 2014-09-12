@@ -139,7 +139,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
  * occasionally takes on the value zero. We use that to provide an optimized series for p = -4n:
  * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} - A_p(w) - B_p(w)
  * with
- * A_p(w) = -2 / \sqrt{2 \pi} (-p)! / (2 \pi)^(-p/2) (1 + w^2/(4 pi^2))^{-1/2 + p/2} cos((1 - p) ArcTan(2 pi/ w))
+ * A_p(w) = (2\pi)^p/\pi (-p)! / (2 \pi)^(-p/2) (1 + w^2/(4 pi^2))^{-1/2 + p/2} cos((1 - p) ArcTan(2 pi/ w))
  * and 
  * B_p(w) = - (2 pi)^p / pi * \sum \limits_{k = 0}^\infty \Gamma(2 + 2k - p)/ (2k+1)! (-1)^k (w/2/\pi)^(2k+1) (Zeta(2 + 2k - p) - 1.0)
  * suitable for |w| < 2 pi
@@ -156,13 +156,13 @@ inline std::complex<FPType> PolyLog_Exp_neg_four(const int n, std::complex<FPTyp
   std::complex<FPType> wup = w/tp;
   std::complex<FPType> wq = wup*wup;
   FPType pref = std::pow(tp, n)/M_PI;
-  res += std::tgamma(1-n)* pref * std::pow(1.0 + wq, -0.5 + n/2) * 
+  res -= std::tgamma(1-n)* pref * std::pow(1.0 + wq, -0.5 + n/2) * 
 //  std::sin( static_cast<FPType>(1-n) * (M_PI/2-std::atan(1.0/wup)));//subtract  the expression A_p(w)
   //using the sine here yields better results...
   std::cos( static_cast<FPType>(1-n) * std::atan(1.0/wup));//subtract  the expression A_p(w)
-  uint k = 0;
+  int k = 0;
   bool terminate = false;
-  uint maxit = 300;
+  constexpr uint maxit = 300;
   FPType gam = std::tgamma(2-n);
   while(!terminate)
   {
