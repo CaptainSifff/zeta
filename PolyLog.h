@@ -90,7 +90,8 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
     //here we factor up the ratio of Gamma(1 - s + k)/k! .
     //This ratio should be well behaved even for large k in the series afterwards
     //Note that we have a problem for large s
-    std::complex<FPType> gam = std::tgamma(1.0-s);
+    //Since s is negative we evaluate the Gamma Function on the positive real axis where it is real.
+    FPType gam = std::tgamma(1.0-s);
 
     FPType sp, cp;
     sincos(M_PI/2.0 * s, &sp, &cp);
@@ -101,7 +102,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
     res += std::complex<FPType>(0.0, 1.0) * gam * (conj(expis) * std::pow(p, s-1.0) - expis *std::pow(q, s-1.0));//this can be optimized for real values of w
     //The above expression is the result of sum_k Gamma(1+k-s) /k! * sin(pi /2* (s-k)) * (w/2/pi)^k
     //Therefore we only need to sample values of zeta(n) on the real axis that really differ from one
-    res += pref * sp * gam * (mytr1::__detail::__riemann_zeta(1-s) - 1.0);
+    res += pref * (sp * gam * (mytr1::__detail::__riemann_zeta(1-s) - 1.0));
     constexpr unsigned int maxit = 200;
     unsigned int j = 1;
     bool terminate = false;
@@ -123,7 +124,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
             if((j/2) & 1)
                 sine = -sine;
         }
-        std::complex<FPType> nextterm =  w2 * gam * (sine * rz);
+        std::complex<FPType> nextterm =  w2 * (gam * sine * rz);
 //	std::cout<<j<<" "<<nextterm<<" "<<rz<<" "<<std::endl;
         w2 *= wup;
         ++j;
