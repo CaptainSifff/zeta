@@ -143,7 +143,6 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
  * and 
  * B_p(w) = - (2 pi)^p / pi * \sum \limits_{k = 0}^\infty \Gamma(2 + 2k - p)/ (2k+1)! (-1)^k (w/2/\pi)^(2k+1) (Zeta(2 + 2k - p) - 1.0)
  * suitable for |w| < 2 pi
- * FIXME: somethings strange in here...
  * @param n the index n = 4k
  * @param w
  */
