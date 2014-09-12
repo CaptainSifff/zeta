@@ -147,19 +147,21 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
  * A_p(w) = (2\pi)^p/\pi (-p)! / (2 \pi)^(-p/2) (1 + w^2/(4 pi^2))^{-1/2 + p/2} cos((1 - p) ArcTan(2 pi/ w))
  * and 
  * B_p(w) = - (2 pi)^p / pi * \sum \limits_{k = 0}^\infty \Gamma(2 + 2k - p)/ (2k+1)! (-1)^k (w/2/\pi)^(2k+1) (Zeta(2 + 2k - p) - 1.0)
- * suitable for |w| < 2 pi
+ * This is suitable for |w| < 2 pi
+ * The original series is (This might be worthwhile if we use the already present table of the Bernoullis)
+ * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} - sigma (2 pi)^p / pi * \sum \limits_{k = 0}^\infty \Gamma(2 + 2k - p)/ (2k+1)! (-1)^k (w/2/\pi)^(2k+1) Zeta(2 + 2k - p)
  * @param n the index n = 4k
  * @param w
  */
 template <typename FPType, int sigma>
-inline std::complex<FPType> PolyLog_Exp_neg_two(const uint n, std::complex<FPType> w)
+inline std::complex<FPType> PolyLog_Exp_neg_even(const uint n, std::complex<FPType> w)
 {
-  std::cout<<"Negative integer s = -2k"<<std::endl;
+  std::cout<<"Negative even integer s = -2k"<<std::endl;
   std::complex<FPType> res = std::exp(std::lgamma(1+n) - FPType(1+n) * std::log(-w));
   constexpr FPType tp = 2.0 * M_PI;
   std::complex<FPType> wup = w/tp;
   std::complex<FPType> wq = wup*wup;
-  FPType pref = std::pow(tp, -int(n))/M_PI;
+  FPType pref = 2.0 * std::pow(tp, -int(1 + n));
   //subtract  the expression A_p(w)
   res -= std::exp(std::lgamma(1+n) - 0.5*(1+n)*std::log( 1.0 + wq)) * 
   //Next, calculate and subtract  the series A_p(w)
@@ -194,10 +196,10 @@ inline std::complex<FPType> PolyLog_Exp_neg(const int s, std::complex<FPType> w)
   switch(n%4)
   {
     case 0:
-      return PolyLog_Exp_neg_two<FPType, 1>(n, w);
+      return PolyLog_Exp_neg_even<FPType, 1>(n, w);
     case 1:
     case 2:
-      return PolyLog_Exp_neg_two<FPType, -1>(n, w);
+      return PolyLog_Exp_neg_even<FPType, -1>(n, w);
     case 3:
       break;
   }
