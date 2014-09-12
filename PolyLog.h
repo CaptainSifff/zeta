@@ -102,7 +102,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
     //The above expression is the result of sum_k Gamma(1+k-s) /k! * sin(pi /2* (s-k)) * (w/2/pi)^k
     //Therefore we only need to sample values of zeta(n) on the real axis that really differ from one
     res += pref * sp * gam * (mytr1::__detail::__riemann_zeta(1-s) - 1.0);
-    const unsigned int maxit = 200;
+    constexpr unsigned int maxit = 200;
     unsigned int j = 1;
     bool terminate = false;
     gam*= (1.0 - s);
@@ -488,7 +488,7 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
   if (fpequal<FPType>(std::rint(s), s))
     {
       //In this branch of the if statement, s is an integer
-      uint p = uint(std::lrint(s));
+      int p = int(std::lrint(s));
       if(p > 0)
         ret = PolyLog_Exp_int_pos(p, w);
       else
