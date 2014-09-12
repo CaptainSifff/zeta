@@ -73,6 +73,9 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<F
 
 /** This function catches the cases of negative real index s.
  * Theoretical convergence is present for |w| < 2*pi.
+ * We use an optimized version of
+ * Li_s(e^w) = Gamma(1-s)*(-w)^(s-1) + (2*pi)^(-s)/pi * A_p(w)
+ * A_p(w)= \sum_k Gamma(1+k-s)/k!*Sin(pi/2*(s-k))*(w/2/\pi)^k*zeta(1+k-s)
  * @param s the index s
  * @param w
  */
