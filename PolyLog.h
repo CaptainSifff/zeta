@@ -82,7 +82,6 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<F
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType> w)
 {   //basic general loop, but s is a negative quantity here
-    //TODO: optimize/fix for the case of negative Integers
     //FIXME Large s makes problems. The series should be rearrangeable so that we only need the ratio Gamma(1-s)/(2 pi)^s
     std::cout<<"Negative real s"<<std::endl;
     std::complex<FPType> res = std::exp(std::lgamma(1-s) - (1-s) * std::log(-w));
@@ -473,7 +472,7 @@ inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, std::complex<FPType
 	  }
 }
 
-/* This is the case where s i s a positive real value.
+/* This is the case where s is a positive real value.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, std::complex<FPType> w)
@@ -509,7 +508,7 @@ inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, std::complex<FP
         }
 }
 
-/* This is the case where s i s a negative real value.
+/* This is the case where s is a negative real value.
  * Now we branch depending on the properties of w in the specific functions
  */
 template <typename FPType>
