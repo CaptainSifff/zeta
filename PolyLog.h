@@ -84,16 +84,17 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
 {   //basic general loop, but s is a negative quantity here
     //FIXME Large s makes problems. The series should be rearrangeable so that we only need the ratio Gamma(1-s)/(2 pi)^s
     std::cout<<"Negative real s"<<std::endl;
-    std::complex<FPType> res = std::exp(std::lgamma(1-s) - (1-s) * std::log(-w));
+    FPType ls = std::lgamma(1-s);
+    std::complex<FPType> res = std::exp(ls - (1-s) * std::log(-w));
     constexpr FPType tp = 2.0 * M_PI;
     const std::complex<FPType> wup = w/tp;
     std::complex<FPType> w2 = wup;
-    std::complex<FPType> pref = std::pow(tp, s)/M_PI;
+    std::complex<FPType> pref = 2.0 * std::pow(tp, s-1);
     //here we factor up the ratio of Gamma(1 - s + k)/k! .
     //This ratio should be well behaved even for large k in the series afterwards
     //Note that we have a problem for large s
     //Since s is negative we evaluate the Gamma Function on the positive real axis where it is real.
-    FPType gam = std::tgamma(1.0-s);
+    FPType gam = std::exp(ls);
 
     FPType sp, cp;
     sincos(M_PI/2.0 * s, &sp, &cp);
@@ -131,7 +132,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
         w2 *= wup;
         ++j;
         gam  *= rzarg/(j);//equal to 1/(j+1) since we have incremented j in the line above
-        terminate = (fpequal( std::abs(res + pref*nextterm), std::abs(res) ) || (j > maxit)) && !fpequal(std::abs(rz), 0.0);/*this last check is necessary at integer s*/
+        terminate = (fpequal( std::abs(res + pref*nextterm), std::abs(res) ) || (j > maxit));
         res += pref*nextterm;
     }
     std::cout<<"Iterations in PolyLogExp_neg: "<<j<<std::endl;
@@ -208,10 +209,10 @@ inline std::complex<FPType> PolyLog_Exp_neg_odd(const uint n, std::complex<FPTyp
   constexpr FPType itp = 1.0/(2.0 * M_PI);
   std::complex<FPType> wq = -w * itp * w*itp;
   FPType pref = 2.0 * std::pow(itp, np);
-  if(sigma != 1)
-    pref = -pref;
   //subtract  the expression A_p(w)
   res += std::exp(lnp -0.5*np*std::log(1.0 - wq))* pref * std::cos( static_cast<FPType>(np) * std::atan(2.0 * M_PI/w));
+    if(sigma != 1)
+    pref = -pref;
   bool terminate = false;
   constexpr uint maxit = 300;
   FPType gam = std::exp(lnp);
@@ -249,6 +250,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const int s, std::complex<FPType> w)
     case 2:
       return PolyLog_Exp_neg_even<FPType, -1>(n, w);
     case 3:
+      return PolyLog_Exp_neg_odd<FPType, -1>(n, w);
       break;
   }
 }
