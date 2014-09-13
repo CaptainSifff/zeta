@@ -283,7 +283,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
     std::complex<FPType> wup = w/tp;
     std::complex<FPType> w2 = std::pow(wup, m+1);
     //It is 1 < 2 - s + m < 2 => Gamma(2-s+m) will not overflow
-    std::complex<FPType> gam = std::tgamma(2.0-s+m)*fac; //here we factor up the ratio of Gamma(1 - s + k)/k! . This ratio should be well behaved even for large k
+    FPType gam = std::tgamma(2.0-s+m)*fac; //here we factor up the ratio of Gamma(1 - s + k)/k! . This ratio should be well behaved even for large k
     FPType sp, cp;
     sincos(M_PI/2.0 * s, &sp, &cp);
     while (!terminate)//assume uniform convergence
