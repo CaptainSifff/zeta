@@ -144,9 +144,9 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
  * Int the template parameter sigma we transport whether p = 4k (sigma = 1) or p = 4k + 2  (sigma = -1)
  * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} - A_p(w) - sigma * B_p(w)
  * with
- * A_p(w) = (2\pi)^p/\pi (-p)! / (2 \pi)^(-p/2) (1 + w^2/(4 pi^2))^{-1/2 + p/2} cos((1 - p) ArcTan(2 pi/ w))
+ * A_p(w) = 2 (2\pi)^(p-1) (-p)! / (2 \pi)^(-p/2) (1 + w^2/(4 pi^2))^{-1/2 + p/2} cos((1 - p) ArcTan(2 pi/ w))
  * and 
- * B_p(w) = - (2 pi)^p / pi * \sum \limits_{k = 0}^\infty \Gamma(2 + 2k - p)/ (2k+1)! (-1)^k (w/2/\pi)^(2k+1) (Zeta(2 + 2k - p) - 1.0)
+ * B_p(w) = - 2 (2 pi)^(p-1) * \sum \limits_{k = 0}^\infty \Gamma(2 + 2k - p)/ (2k+1)! (-1)^k (w/2/\pi)^(2k+1) (Zeta(2 + 2k - p) - 1.0)
  * This is suitable for |w| < 2 pi
  * The original series is (This might be worthwhile if we use the already present table of the Bernoullis)
  * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} - sigma (2 pi)^p / pi * \sum \limits_{k = 0}^\infty \Gamma(2 + 2k - p)/ (2k+1)! (-1)^k (w/2/\pi)^(2k+1) Zeta(2 + 2k - p)
@@ -185,6 +185,54 @@ inline std::complex<FPType> PolyLog_Exp_neg_even(const uint n, std::complex<FPTy
   return res;
 }
 
+/** This function catches the cases of negative integer index s which are odd. In that case the sine occuring in the expansion 
+ * occasionally takes on the value zero. We use that to provide an optimized series for p = 1 + 2k:
+ * Int the template parameter sigma we transport whether p = 1 + 4k (sigma = 1) or p = 3 + 4k  (sigma = -1)
+ * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} + sigma * A_p(w) - sigma * B_p(w)
+ * with
+ * A_p(w) = 2 (2\pi)^(p-1) (1 + w^2/(4 pi^2))^{-1/2 + p/2} cos((1 - p) ArcTan(2 pi/ w))
+ * and 
+ * B_p(w) = 2 (2 pi)^(p-1) * \sum \limits_{k = 0}^\infty \Gamma(1 + 2k - p)/ (2k)! (-w^2/4/\pi^2)^k (Zeta(1 + 2k - p) - 1.0)
+ * This is suitable for |w| < 2 pi
+ * The original series is (This might be worthwhile if we use the already present table of the Bernoullis)
+ * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} - sigma *2*(2 pi)^(p-1) * \sum \limits_{k = 0}^\infty \Gamma(1 + 2k - p)/ (2k)! (-1)^k (w/2/\pi)^(2k) Zeta(1 + 2k - p)
+ * @param n the index n = 4k
+ * @param w
+ */
+template <typename FPType, int sigma>
+inline std::complex<FPType> PolyLog_Exp_neg_odd(const uint n, std::complex<FPType> w)
+{
+  std::cout<<"Negative odd integer s = -(1 + 2k)"<<std::endl;
+  const uint np = 1+n;
+  FPType lnp = std::lgamma(np);
+  std::complex<FPType> res = std::exp(lnp - FPType(np) * std::log(-w));
+  constexpr FPType itp = 1.0/(2.0 * M_PI);
+  std::complex<FPType> wq = -w * itp * w*itp;
+  FPType pref = 2.0 * std::pow(itp, np);
+  if(sigma != 1)
+    pref = -pref;
+  //subtract  the expression A_p(w)
+  res += std::pow(1.0 - wq, -0.5*(1 + n) ) * pref * std::cos( static_cast<FPType>(1+n) * std::atan(2.0 * M_PI/w));
+  bool terminate = false;
+  constexpr uint maxit = 300;
+  FPType gam = std::exp(lnp);
+  //zeroth order
+  res -= pref * gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(np)) - 1.0);
+  uint k = 0;
+  std::complex<FPType> wup = wq;
+  while(!terminate)
+  {
+    gam *= static_cast<FPType>(2*k + np)/(1 + 2*k) * static_cast<FPType>(1+2*k + np) / (2*k+2);
+    std::complex<FPType> newterm = ( gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(2*k + 2 + np)) - 1.0)) * wup;
+    wup *= wq;
+    terminate = (fpequal( std::abs(res - pref*newterm), std::abs(res) ) || (k > maxit));
+    res -= pref*newterm;
+    ++k;
+  }
+  std::cout<<"Iterations in the series for s = -(1+2*k) : "<<k<<std::endl;
+  return res;
+}
+
 /** This function catches the cases of negative integer index s
  * @param s the index s
  * @param w
@@ -198,6 +246,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const int s, std::complex<FPType> w)
     case 0:
       return PolyLog_Exp_neg_even<FPType, 1>(n, w);
     case 1:
+      return PolyLog_Exp_neg_odd<FPType, 1>(n, w);
     case 2:
       return PolyLog_Exp_neg_even<FPType, -1>(n, w);
     case 3:
