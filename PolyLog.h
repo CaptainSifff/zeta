@@ -156,15 +156,15 @@ template <typename FPType, int sigma>
 inline std::complex<FPType> PolyLog_Exp_neg_even(const uint n, std::complex<FPType> w)
 {
   std::cout<<"Negative even integer s = -2k"<<std::endl;
-  std::complex<FPType> res = std::exp(std::lgamma(1+n) - FPType(1+n) * std::log(-w));
+  const uint np = 1+n;
+  FPType lnp = std::lgamma(np);
+  std::complex<FPType> res = std::exp(lnp - FPType(np) * std::log(-w));
   constexpr FPType tp = 2.0 * M_PI;
   std::complex<FPType> wup = w/tp;
   std::complex<FPType> wq = wup*wup;
   FPType pref = 2.0 * std::pow(tp, -int(1 + n));
   //subtract  the expression A_p(w)
-  res -= std::exp(std::lgamma(1+n) - 0.5*(1+n)*std::log( 1.0 + wq)) * 
-  //Next, calculate and subtract  the series A_p(w)
-  pref * std::cos( static_cast<FPType>(1+n) * std::atan(1.0/wup));
+  res -= std::exp(lnp - 0.5*np*std::log( 1.0 + wq)) * pref * std::cos( static_cast<FPType>(np) * std::atan(1.0/wup));
   uint k = 0;
   bool terminate = false;
   constexpr uint maxit = 300;
@@ -189,7 +189,7 @@ inline std::complex<FPType> PolyLog_Exp_neg_even(const uint n, std::complex<FPTy
  * Int the template parameter sigma we transport whether p = 1 + 4k (sigma = 1) or p = 3 + 4k  (sigma = -1)
  * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} + sigma * A_p(w) - sigma * B_p(w)
  * with
- * A_p(w) = 2 (2\pi)^(p-1) (1 + w^2/(4 pi^2))^{-1/2 + p/2} cos((1 - p) ArcTan(2 pi/ w))
+ * A_p(w) = 2 (2\pi)^(p-1) * Gamma(1-p) (1 + w^2/(4 pi^2))^{-1/2 + p/2} cos((1 - p) ArcTan(2 pi/ w))
  * and 
  * B_p(w) = 2 (2 pi)^(p-1) * \sum \limits_{k = 0}^\infty \Gamma(1 + 2k - p)/ (2k)! (-w^2/4/\pi^2)^k (Zeta(1 + 2k - p) - 1.0)
  * This is suitable for |w| < 2 pi
@@ -211,7 +211,7 @@ inline std::complex<FPType> PolyLog_Exp_neg_odd(const uint n, std::complex<FPTyp
   if(sigma != 1)
     pref = -pref;
   //subtract  the expression A_p(w)
-  res += std::pow(1.0 - wq, -0.5*(1 + n) ) * pref * std::cos( static_cast<FPType>(1+n) * std::atan(2.0 * M_PI/w))*std::exp(lnp);
+  res += std::exp(lnp -0.5*np*std::log(1.0 - wq))* pref * std::cos( static_cast<FPType>(np) * std::atan(2.0 * M_PI/w));
   bool terminate = false;
   constexpr uint maxit = 300;
   FPType gam = std::exp(lnp);
