@@ -211,7 +211,7 @@ inline std::complex<FPType> PolyLog_Exp_neg_odd(const uint n, std::complex<FPTyp
   if(sigma != 1)
     pref = -pref;
   //subtract  the expression A_p(w)
-  res += std::pow(1.0 - wq, -0.5*(1 + n) ) * pref * std::cos( static_cast<FPType>(1+n) * std::atan(2.0 * M_PI/w));
+  res += std::pow(1.0 - wq, -0.5*(1 + n) ) * pref * std::cos( static_cast<FPType>(1+n) * std::atan(2.0 * M_PI/w))*std::exp(lnp);
   bool terminate = false;
   constexpr uint maxit = 300;
   FPType gam = std::exp(lnp);
