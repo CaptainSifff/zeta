@@ -77,6 +77,70 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<F
     return res;
 }
 
+/** This function catches the cases of positive integer index s for real w.
+ * This specialization is worthwhile to catch the differing behaviour of log(x).
+ * Li_s(e^w) = \sum_{k=0, k != s-1} \zeta(s-k) w^k/k! + (H_{s-1} - log(-w)) w^(s-1)/(s-1)!
+ * The radius of convergence is |w| < 2 pi.
+ * Note that this series involves a log(-x).
+ * gcc and Mathematica differ in their implementation of \log(e^(i \pi)):
+ * gcc: \log(e^(+- i * \pi)) = +- i \pi
+ * whereas Mathematica doesn't preserve the sign in this case: \log(e^(+- i * \pi)) = +i \pi
+ * @param s the index s
+ * @param w
+ */
+template <typename FPType>
+inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, FPType w)
+{   //positive integer s
+    std::cout<<"Integer Series for positive s"<<std::endl;
+    FPType res = mytr1::__detail::__riemann_zeta(static_cast<FPType>(s));//optimization possibility: s are positive integers
+    FPType wpower = w;
+    FPType fac = 1.0;
+    FPType harmonicN = 1.0;//HarmonicNumber_1
+    for (uint k = 1; k <= s-2; ++k)
+    {
+        res += wpower*fac*mytr1::__detail::__riemann_zeta(static_cast<FPType>(s - k));
+        wpower *= w;
+        FPType temp = 1.0/(1.0 + k);
+        fac *= temp;
+        harmonicN += temp;
+    }
+    //harmonicN now contains H_{s-1}
+    //fac should be 1/(n-1)!
+    std::complex<FPType> imagtemp = (harmonicN - std::log(std::complex<FPType>(-w, 0.0)))*wpower*fac;
+    res += real(imagtemp);
+//    res += (harmonicN - std::log(-w))*wpower*fac;
+    wpower *= w;
+    fac /= s;
+    res -= wpower*fac/2.0;
+    wpower *= w;
+    //now comes the remainder of the series.
+    const FPType tp = 2.0 * M_PI;
+    const FPType pref = wpower/M_PI/tp;
+    const unsigned int maxit = 200;
+    unsigned int j = 1;
+    bool terminate = false;
+    fac /= (s+1.0);//(1/(n+1)!)
+    res -= M_PI*M_PI/6.0*fac * pref; //subtract the zeroth order term.
+    //remainder of series
+    fac *= 3.0*2.0/(s + 2.0)/(s+3.0);
+    FPType upfac = -(w/tp)*(w/tp);
+    FPType w2 = upfac;
+    while (!terminate)//assume uniform convergence
+    {
+        FPType rzarg = static_cast<FPType>(2*j+2);
+        FPType rz = mytr1::__detail::__riemann_zeta(rzarg);
+//        std::cout<<rz<<" "<<fac<<" "<<w2<<std::endl;
+        FPType nextterm = rz*fac*w2;
+        w2 *= upfac;
+        fac *= rzarg/(rzarg + s) * (rzarg+1.0)/(rzarg + s + 1.0);
+        ++j;
+        terminate = (fpequal( std::abs(res - pref*nextterm), std::abs(res) ) || (j > maxit));
+        res -= pref * nextterm;
+    }
+    std::cout<<"Iterations in Integer Series: "<<j<<std::endl;
+    return std::complex<FPType>(res, imag(imagtemp));
+}
+
 /** This function catches the cases of negative real index s.
  * Theoretical convergence is present for |w| < 2*pi.
  * We use an optimized version of
@@ -468,7 +532,7 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, FPType w)
             //The transition point chosen here, is quite arbitrary and needs more testing.
             if(w < 6.0)
             {
-                return PolyLog_Exp_pos(s , std::complex<FPType>(w));
+                return PolyLog_Exp_pos(s, w);
             }
             else
             {
