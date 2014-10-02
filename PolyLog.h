@@ -390,7 +390,7 @@ template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, std::complex<FPType> w)
 {
     FPType rw = w.real();
-  FPType iw = w.imag();
+    FPType iw = w.imag();
     if(fpequal(rw, 0.0) && fpequal(std::remainder(iw, 2.0*M_PI), 0.0))
     {
         if (s > 1)
@@ -427,6 +427,44 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, std::complex<FPTyp
                 //wikipedia says that this is required for Wood's formula
                 while (w.imag() > 0) w = std::complex<FPType>(w.real(), w.imag() - 2.0*M_PI);
                 while (w.imag() <= -2.0*M_PI) w = std::complex<FPType>(w.real(), w.imag() + 2.0*M_PI);
+                return PolyLog_Exp_asym(static_cast<FPType>(s), w);//FIXME: the series should terminate after a finite number of terms.
+            }
+        }
+}
+
+/* This is the case where s is a positive integer. And w is supposed to be a real
+ */
+template <typename FPType>
+inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, FPType w)
+{
+    if(fpequal(w, 0.0))
+    {
+        if (s > 1)
+            return mytr1::__detail::__riemann_zeta(s);
+        else
+            return std::numeric_limits<FPType>::infinity();
+    }
+        if(0 == s)
+        {
+            FPType t = std::exp(w);
+            return t/(1.0 - t);
+        }
+        else if (1 == s)
+            return -std::log(1.0 - std::exp(w));
+        else
+        {
+	    if(w < -(M_PI/2.0 + M_PI/5.0)   )
+	    {
+	      //choose the exponentially converging series
+	      return Poly_log_exp_negative_real_part(s, w);
+	    }
+            //The transition point chosen here, is quite arbitrary and needs more testing.
+            if(w < 6.0)
+            {
+                return PolyLog_Exp_pos(s , w);
+            }
+            else
+            {
                 return PolyLog_Exp_asym(static_cast<FPType>(s), w);//FIXME: the series should terminate after a finite number of terms.
             }
         }
@@ -477,6 +515,27 @@ inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, std::complex<FPType
 	  }
 }
 
+/* This is the case where s is a negative integer. and w is a real
+ */
+template <typename FPType>
+inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, FPType w)
+{
+  if(w < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
+  {
+    return Poly_log_exp_negative_real_part(s, w);
+  }
+  if (fpequal(w, 0.0)) return std::numeric_limits<FPType>::infinity();
+  if(w < 6.0)//arbitrary transition point...
+  {
+    return PolyLog_Exp_neg(s , w);
+    
+  }
+  else
+  {
+    return PolyLog_Exp_asym(static_cast<FPType>(s), w);//FIXME: the series should terminate after a finite number of terms.
+  }
+}
+
 /* This is the case where s is a positive real value.
  */
 template <typename FPType>
@@ -513,6 +572,32 @@ inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, std::complex<FP
         }
 }
 
+/* This is the case where s is a positive real value. and w is a plain real.
+ */
+template <typename FPType>
+inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, FPType w)
+{
+    if(fpequal(w, 0.0))
+    {
+        if (s > 1.0)
+            return mytr1::__detail::__riemann_zeta(s);
+        else
+            return std::numeric_limits<FPType>::infinity();
+    }
+  if(w < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
+  {
+    return Poly_log_exp_negative_real_part(s, w);
+  }
+  if(rw < 6.0)//arbitrary transition point
+  {
+    return PolyLog_Exp_pos(s, w);
+  }
+  else
+  {
+    return PolyLog_Exp_asym(s,w);
+  }
+}
+
 /* This is the case where s is a negative real value.
  * Now we branch depending on the properties of w in the specific functions
  */
@@ -543,13 +628,35 @@ inline std::complex<FPType> PolyLog_Exp_real_neg(const FPType s, std::complex<FP
         }
 }
 
-/** This is the Frontend function which calculates Li_s( e^w )
- * First we branch into different parts depending on the properties of s
+/* This is the case where s is a negative real value.
+ * Now we branch depending on the properties of w in the specific functions.
+ * w is a real quantity
+ */
+template <typename FPType>
+inline std::complex<FPType> PolyLog_Exp_real_neg(const FPType s, FPType w)
+{
+  if(w < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
+  {
+    return Poly_log_exp_negative_real_part(s, w);
+  }
+  if(w < 6)//arbitrary transition point
+  {
+    return PolyLog_Exp_neg(s, w);
+  }
+  else
+  {
+    return PolyLog_Exp_asym(s,w);
+  }
+}
+
+/** This is the frontend function which calculates Li_s( e^w )
+ * First we branch into different parts depending on the properties of s.
+ * This function is the same irrespective of a real or complex w
  * @param s the index s
  * @param w complex w
  */
-template <typename FPType>
-inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
+template <typename FPType, typename ArgType>
+inline std::complex<FPType> PolyLog_Exp(const FPType s, ArgType w)
 {
   std::complex<FPType> ret;
   if (fpequal<FPType>(std::rint(s), s))
@@ -571,54 +678,6 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, std::complex<FPType> w)
 	ret = PolyLog_Exp_real_neg(s, w);
     }
     return ret;
-}
-
-/** This is the Frontend function which calculates Li_s( e^w )
- * @param s the index s
- * @param w real w
- */
-template <typename FPType>
-inline std::complex<FPType> PolyLog_Exp(const FPType s, FPType w)
-{
-    if(fpequal(real(w), 0.0) && (fpequal(imag(w), 0.0) || fpequal(imag(w), 2.0*M_PI)))//catch the case of the PolyLog evaluated evaluated at e^0
-    {
-        if (s > 1.0)
-            return mytr1::__detail::__riemann_zeta(s);
-        else
-            return std::numeric_limits<FPType>::infinity();
-    }
-    if (fpequal<FPType>(std::rint(s), s))
-    {   //capture the cases of positive integer index
-        int nu = static_cast<int> (lrint(s));
-        if(0 == nu)
-        {
-            FPType t = std::exp(w);
-            return t/(1.0 - t);
-        }
-        else if (1 == nu)
-            return -std::log(1.0 - std::exp(w));
-        else if (nu > 1)
-        {
-            if(real(w) < 15.0)//arbitrary transition point...
-                return PolyLog_Exp_pos(static_cast<uint>(nu) , w);
-            else
-                return PolyLog_Exp_asym(s,w);//FIXME: the series should terminate after a finite number of terms.
-        }
-        else//e^w with real w is always a positive quantity
-	    return PolyLog_Exp_neg(s, w);//no asymptotic expansion available...
-    }
-    else
-    {
-        if(real(w) < 15.0)//arbitrary transition point
-        {
-            if (s < 0)
-                return PolyLog_Exp_neg(s, w);
-            else
-                return PolyLog_Exp_pos(s, w);
-        }
-        else
-            return PolyLog_Exp_asym(s,w);
-    }
 }
 
 /** A function to implement the PolyLog in those cases where we can calculate it.
