@@ -293,7 +293,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
         int idx = m + 1 + j;
         FPType zetaarg = 1 + idx - s;
         FPType sine;
-        if(idx & 1)//save the reperated calculation of the sines
+        if(idx & 1)//save the repeated calculation of the sines
         {   /*odd*/
             sine = cp;
             if ( !((idx-1)/ 2 & 1) )
@@ -321,7 +321,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
  * It is given by 2 \sum \limits_{k=0}^\infty \zeta(2k) w^{s-2k}/Gamma(s-2k+1) -i \pi w^(s-1)/Gamma(s)
  * for Re(w) >> 1
  * Don't check this against Mathematica 8.
- * For real x the imaginary part of the PolyLog is given by Im(Li_s(e^u)) = - \pi u^{s-1}/Gamma(s)
+ * For real u the imaginary part of the PolyLog is given by Im(Li_s(e^u)) = - \pi u^{s-1}/Gamma(s)
  * Check this relation for any benchmark that you use.
  * @param s the index s
  * @param w
@@ -407,11 +407,13 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, std::complex<FPTyp
             return -std::log(1.0 - std::exp(w));
         else
         {
-	    if(rw < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
-  {
-    return Poly_log_exp_negative_real_part(s, w);
-  }
-            if(rw < 6.0)//arbitrary transition point...
+	    if(rw < -(M_PI/2.0 + M_PI/5.0)   )
+	    {
+	      //choose the exponentially converging series
+	      return Poly_log_exp_negative_real_part(s, w);
+	    }
+            //The transition point chosen here, is quite arbitrary and needs more testing.
+            if(rw < 6.0)
             {
 	       /*The reductions of the imaginary part yield the same results as Mathematica.
                * Necessary to improve the speed of convergence
@@ -430,14 +432,15 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, std::complex<FPTyp
         }
 }
 
-/* This is the case where s i s a negative integer.
+/* This is the case where s is a negative integer.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, std::complex<FPType> w)
 {
-    if (( ((-s) & 1) == 0) && fpequal(real(w), 0.0))//odd s and w on the unit-circle
-	  {
-	    FPType iw = imag(w);//get imaginary part
+    if (( ((-s) & 1) == 0) && fpequal(real(w), 0.0))
+    {
+      //Now s is odd and w on the unit-circle
+      FPType iw = imag(w);//get imaginary part
 	    FPType rem = std::remainder(iw, 2.0*M_PI);
 	    if(fpequal(std::abs(rem), 0.5))
 	    {
@@ -636,22 +639,22 @@ inline std::complex<FPType> PolyLog(const FPType s, std::complex<FPType> w)
 
 /** A function to implement the PolyLog for two real arguments.
  * @param s The index s
- * @param w A real w
+ * @param x A real x
 */
 template <typename FPType>
-inline std::complex<FPType> PolyLog(const FPType s, FPType w)
+inline std::complex<FPType> PolyLog(const FPType s, FPType x)
 {
-    if (fpequal(w, 0.0)) return 0.0;//According to Mathematica
-    if (w < 0)
+    if (fpequal(x, 0.0)) return 0.0;//According to Mathematica
+    if (x < 0)
     {   //use the square formula to access negative values.
-        FPType wp = -w;
-        FPType x = std::log(wp);
-        return PolyLog_Exp(s, 2.0 * x) * std::pow(2.0, 1.0-s) - PolyLog_Exp(s, x);
+        FPType xp = -x;
+        FPType y = std::log(xp);
+        return PolyLog_Exp(s, 2.0 * y) * std::pow(2.0, 1.0-s) - PolyLog_Exp(s, y);
     }
     else
     {
-        FPType x = std::log(w);
-        return PolyLog_Exp(s, w);
+        FPType y = std::log(x);
+        return PolyLog_Exp(s, y);
     }
 }
 
