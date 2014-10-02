@@ -363,20 +363,20 @@ inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType
 /**
  * Theoretical convergence for Re(w) < 0. Seems to beat the other expansions for Re(w) < -pi/2 - pi/5
  */
-template <typename FPType, typename PowerType>
-std::complex<FPType> Poly_log_exp_negative_real_part(PowerType s, std::complex<FPType> w)
+template <typename PowerType, typename T>
+T Poly_log_exp_negative_real_part(PowerType s, T w)
 {
   std::cout<<"negative real part series (exponential)"<<std::endl;
-  std::complex<FPType> ew = std::exp(w);
-  std::complex<FPType> up = ew;
-  std::complex<FPType> res = ew;
+  T ew = std::exp(w);
+  const T up = ew;
+  T res = ew;
   uint maxiter = 500;
   bool terminate = false;
   uint k = 2;
   while(!terminate)
   {
     ew *= up;
-    std::complex<FPType> newterm = std::pow(k, -s) * ew;
+    T newterm = std::pow(k, -int(s)) * ew;
     terminate = (fpequal(std::abs(res + newterm), std::abs(res))) || (k > maxiter);
     res += newterm;
     ++k;
@@ -457,16 +457,16 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, FPType w)
 	    if(w < -(M_PI/2.0 + M_PI/5.0)   )
 	    {
 	      //choose the exponentially converging series
-	      return Poly_log_exp_negative_real_part(s, w);
+	      return Poly_log_exp_negative_real_part(s, std::complex<FPType>(w));
 	    }
             //The transition point chosen here, is quite arbitrary and needs more testing.
             if(w < 6.0)
             {
-                return PolyLog_Exp_pos(s , w);
+                return PolyLog_Exp_pos(s , std::complex<FPType>(w));
             }
             else
             {
-                return PolyLog_Exp_asym(static_cast<FPType>(s), w);//FIXME: the series should terminate after a finite number of terms.
+                return PolyLog_Exp_asym(static_cast<FPType>(s), std::complex<FPType>(w));//FIXME: the series should terminate after a finite number of terms.
             }
         }
 }
@@ -523,17 +523,17 @@ inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, FPType w)
 {
   if(w < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
   {
-    return Poly_log_exp_negative_real_part(s, w);
+    return Poly_log_exp_negative_real_part(s, std::complex<FPType>(w));
   }
   if (fpequal(w, 0.0)) return std::numeric_limits<FPType>::infinity();
   if(w < 6.0)//arbitrary transition point...
   {
-    return PolyLog_Exp_neg(s , w);
+    return PolyLog_Exp_neg(s , std::complex<FPType>(w));
     
   }
   else
   {
-    return PolyLog_Exp_asym(static_cast<FPType>(s), w);//FIXME: the series should terminate after a finite number of terms.
+    return PolyLog_Exp_asym(static_cast<FPType>(s), std::complex<FPType>(w));//FIXME: the series should terminate after a finite number of terms.
   }
 }
 
@@ -578,24 +578,24 @@ inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, std::complex<FP
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, FPType w)
 {
-    if(fpequal(w, 0.0))
-    {
-        if (s > 1.0)
-            return mytr1::__detail::__riemann_zeta(s);
-        else
-            return std::numeric_limits<FPType>::infinity();
-    }
+  if(fpequal(w, 0.0))
+  {
+      if (s > 1.0)
+          return mytr1::__detail::__riemann_zeta(s);
+      else
+          return std::numeric_limits<FPType>::infinity();
+  }
   if(w < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
   {
     return Poly_log_exp_negative_real_part(s, w);
   }
   if(w < 6.0)//arbitrary transition point
   {
-    return PolyLog_Exp_pos(s, w);
+    return PolyLog_Exp_pos(s, std::complex<FPType>(w));
   }
   else
   {
-    return PolyLog_Exp_asym(s,w);
+    return PolyLog_Exp_asym(s, std::complex<FPType>(w));
   }
 }
 
@@ -638,15 +638,15 @@ inline std::complex<FPType> PolyLog_Exp_real_neg(const FPType s, FPType w)
 {
   if(w < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
   {
-    return Poly_log_exp_negative_real_part(s, w);
+    return Poly_log_exp_negative_real_part(s, std::complex<FPType>(w));
   }
   if(w < 6)//arbitrary transition point
   {
-    return PolyLog_Exp_neg(s, w);
+    return PolyLog_Exp_neg(s, std::complex<FPType>(w));
   }
   else
   {
-    return PolyLog_Exp_asym(s,w);
+    return PolyLog_Exp_asym(s, std::complex<FPType>(w));
   }
 }
 
