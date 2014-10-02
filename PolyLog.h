@@ -84,12 +84,12 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
 {   //basic general loop, but s is a negative quantity here
     //FIXME Large s makes problems. The series should be rearrangeable so that we only need the ratio Gamma(1-s)/(2 pi)^s
     std::cout<<"Negative real s"<<std::endl;
-    FPType ls = std::lgamma(1-s);
-    std::complex<FPType> res = std::exp(ls - (1-s) * std::log(-w));
+    FPType ls = std::lgamma(1.0-s);
+    std::complex<FPType> res = std::exp(ls - (1.0-s) * std::log(-w));
     constexpr FPType tp = 2.0 * M_PI;
     const std::complex<FPType> wup = w/tp;
     std::complex<FPType> w2 = wup;
-    std::complex<FPType> pref = 2.0 * std::pow(tp, s-1);
+    std::complex<FPType> pref = 2.0 * std::pow(tp, - (1.0-s));
     //here we factor up the ratio of Gamma(1 - s + k)/k! .
     //This ratio should be well behaved even for large k in the series afterwards
     //Note that we have a problem for large s
@@ -105,14 +105,14 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
     res += std::complex<FPType>(0.0, 1.0) * gam * (conj(expis) * std::pow(p, s-1.0) - expis *std::pow(q, s-1.0));//this can be optimized for real values of w
     //The above expression is the result of sum_k Gamma(1+k-s) /k! * sin(pi /2* (s-k)) * (w/2/pi)^k
     //Therefore we only need to sample values of zeta(n) on the real axis that really differ from one
-    res += pref * (sp * gam * (mytr1::__detail::__riemann_zeta(1-s) - 1.0));
+    res += pref * (sp * gam * (mytr1::__detail::__riemann_zeta(1.0-s) - 1.0));
     constexpr unsigned int maxit = 200;
     unsigned int j = 1;
     bool terminate = false;
     gam*= (1.0 - s);
     while (!terminate)//assume uniform convergence
     {
-        FPType rzarg = 1 + j - s;
+        FPType rzarg = (1.0 - s) + j;
         FPType rz = (mytr1::__detail::__riemann_zeta(rzarg) - 1.0);//only the difference to one is needed. FIXME: this expression underflows for rzarg > 50
         FPType sine;
         if(j & 1)//save the repeated recalculation of the sines
@@ -211,7 +211,7 @@ inline std::complex<FPType> PolyLog_Exp_neg_odd(const uint n, std::complex<FPTyp
   FPType pref = 2.0 * std::pow(itp, np);
   //subtract  the expression A_p(w)
   res += std::exp(lnp -0.5*np*std::log(1.0 - wq))* pref * std::cos( static_cast<FPType>(np) * std::atan(2.0 * M_PI/w));
-    if(sigma != 1)
+  if(sigma != 1)
     pref = -pref;
   bool terminate = false;
   constexpr uint maxit = 300;
@@ -222,8 +222,9 @@ inline std::complex<FPType> PolyLog_Exp_neg_odd(const uint n, std::complex<FPTyp
   std::complex<FPType> wup = wq;
   while(!terminate)
   {
-    gam *= static_cast<FPType>(2*k + np)/(1 + 2*k) * static_cast<FPType>(1+2*k + np) / (2*k+2);
-    std::complex<FPType> newterm = ( gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(2*k + 2 + np)) - 1.0)) * wup;
+    uint zk = 2*k;
+    gam *= static_cast<FPType>(zk + np)/(1 + zk) * static_cast<FPType>(1+zk + np) / (zk+2);
+    std::complex<FPType> newterm = ( gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(zk + 2 + np)) - 1.0)) * wup;
     wup *= wq;
     terminate = (fpequal( std::abs(res - pref*newterm), std::abs(res) ) || (k > maxit));
     res -= pref*newterm;
@@ -588,7 +589,7 @@ inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, FPType w)
   {
     return Poly_log_exp_negative_real_part(s, w);
   }
-  if(rw < 6.0)//arbitrary transition point
+  if(w < 6.0)//arbitrary transition point
   {
     return PolyLog_Exp_pos(s, w);
   }
