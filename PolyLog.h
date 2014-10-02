@@ -16,7 +16,13 @@ bool fpequal(const FPType& a, const FPType& b)
     return retval;
 }
 
-/** This function catches the cases of positive integer index s
+/** This function catches the cases of positive integer index s.
+ * Li_s(e^w) = \sum_{k=0, k != s-1} \zeta(s-k) w^k/k! + (H_{s-1} - log(-w)) w^(s-1)/(s-1)!
+ * The radius of convergence is |w| < 2 pi.
+ * Note that this series involves a log(-x).
+ * gcc and Mathematica differ in their implementation of \log(e^(i \pi)):
+ * gcc: \log(e^(+- i * \pi)) = +- i \pi
+ * whereas Mathematica doesn't preserve the sign in this case: \log(e^(+- i * \pi)) = +i \pi
  * @param s the index s
  * @param w
  */
@@ -440,7 +446,6 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, FPType w)
 {
     if(fpequal(w, 0.0))
     {
-      std::cout<<"here"<<std::endl;
         if (s > 1)
             return mytr1::__detail::__riemann_zeta(FPType(s));
         else
