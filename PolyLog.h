@@ -326,7 +326,12 @@ inline std::complex<FPType> PolyLog_Exp_neg(const int s, std::complex<FPType> w)
   }
 }
 
-/** This function catches the cases of positive real index s
+/** This function catches the cases of positive real index s.
+ * The defining series is
+ * Li_s(e^w) = A_s(w) + B_s(w)+ \Gamma(1-s)(-w)^(s-1)
+ * with
+ * A_s(w) = \sum_{k=0}^{m} \zeta(s-k)w^k/k!
+ * B_s(w) = \sum_{k=m+1}^\infty \sin(\pi/2(s-k)) \Gamma(1-s+k)\zeta(1-s+k) (w/2/\pi)^k/k!
  * @param s the index s
  * @param w
  */
