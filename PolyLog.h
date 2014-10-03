@@ -342,7 +342,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
     std::complex<FPType> res = mytr1::__detail::__riemann_zeta(s);
     std::complex<FPType> wpower = w;
     FPType fac = 1.0;
-    uint m = static_cast<uint>(std::floor(s));
+    const uint m = static_cast<uint>(std::floor(s));
     for (uint k = 1; k <= m; ++k)
     {
         res += wpower*fac*mytr1::__detail::__riemann_zeta(static_cast<FPType>(s - k));
@@ -351,7 +351,8 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
         fac *= temp;
     }
     //fac should be 1/(m+1)!
-    res += std::exp(std::lgamma(1.0-s) - (1.0-s) * std::log(-w));
+    //We revert here to the plain evaluation of the Gamma function instead of lgamma since we require evaluation at negative values.
+    res += std::tgamma(1.0-s)*std::pow(-w, s-1.0);
     const FPType tp = 2.0 * M_PI;
     const FPType pref = 2.0 * std::pow(tp, s-1);
     //now comes the remainder of the series
