@@ -431,7 +431,9 @@ inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType
 }
 
 /**
- * Theoretical convergence for Re(w) < 0. Seems to beat the other expansions for Re(w) < -pi/2 - pi/5
+ * Theoretical convergence for Re(w) < 0. Seems to beat the other expansions for Re(w) < -pi/2 - pi/5.
+ * Note that this is an implementation of the basic series:
+ * Li_s(e^z) = \sum_{k=1} e^k*z * k^(-s)
  */
 template <typename PowerType, typename T>
 T Poly_log_exp_negative_real_part(PowerType s, T w)
@@ -729,6 +731,8 @@ inline std::complex<FPType> PolyLog_Exp_real_neg(const FPType s, FPType w)
 template <typename FPType, typename ArgType>
 inline std::complex<FPType> PolyLog_Exp(const FPType s, ArgType w)
 {
+  if(s > 45.0)//cutoff chosen arbitrarily. Not much testing was involved
+    return Poly_log_exp_negative_real_part(s, w);
   std::complex<FPType> ret;
   if (fpequal<FPType>(std::rint(s), s))
     {
