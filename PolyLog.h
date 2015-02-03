@@ -16,6 +16,41 @@ bool fpequal(const FPType& a, const FPType& b)
     return retval;
 }
 
+/**
+ * A function to calculate the values of zeta at even positive integers. For values smaller than thirty a table is used.
+ * @param k 
+ * @return zeta(k)
+ */
+template <typename FPType = double> 
+inline FPType evenzeta(const uint& k)
+{
+  //the following constants were calculated with Mathematica 8
+  constexpr FPType data[] = {
+-0.50000000000000000000000000,
+ 1.6449340668482264364724152,
+ 1.0823232337111381915160037,
+ 1.0173430619844491397145179,
+ 1.0040773561979443393786852,
+ 1.0009945751278180853371460,
+ 1.0002460865533080482986380,
+ 1.0000612481350587048292585,
+ 1.0000152822594086518717326,
+ 1.0000038172932649998398565,
+ 1.0000009539620338727961132,
+ 1.0000002384505027277329900,
+ 1.0000000596081890512594796,
+ 1.0000000149015548283650412,
+ 1.0000000037253340247884571,   
+  };
+  constexpr uint maxk = 2 * sizeof(data)/sizeof(FPType);
+  FPType retval;
+  if (k < maxk)
+    retval = data[k/2];
+  else
+    retval = mytr1::__detail::__riemann_zeta(static_cast<FPType>(k));
+  return retval;
+}
+
 /** This function catches the cases of positive integer index s.
  * Li_s(e^w) = \sum_{k=0, k != s-1} \zeta(s-k) w^k/k! + (H_{s-1} - log(-w)) w^(s-1)/(s-1)!
  * The radius of convergence is |w| < 2 pi.
@@ -73,7 +108,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<F
         terminate = (fpequal( std::abs(res - pref*nextterm), std::abs(res) ) || (j > maxit));
         res -= pref * nextterm;
     }
-    std::cout<<"Iterations in Integer Series: "<<j<<std::endl;
+    std::cout<<"Iterations in Integer Series: "<<j<<'\n';
     return res;
 }
 
@@ -137,7 +172,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, FPType w)
         terminate = (fpequal( std::abs(res - pref*nextterm), std::abs(res) ) || (j > maxit));
         res -= pref * nextterm;
     }
-    std::cout<<"Iterations in Integer Series: "<<j<<std::endl;
+    std::cout<<"Iterations in Integer Series: "<<j<<'\n';
     return std::complex<FPType>(res, imag(imagtemp));
 }
 
@@ -211,7 +246,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
 
 /** This function catches the cases of negative integer index s which are multiples of two. In that case the sine occuring in the expansion 
  * occasionally takes on the value zero. We use that to provide an optimized series for p = 2n:
- * Int the template parameter sigma we transport whether p = 4k (sigma = 1) or p = 4k + 2  (sigma = -1)
+ * In the template parameter sigma we transport whether p = 4k (sigma = 1) or p = 4k + 2  (sigma = -1)
  * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} - A_p(w) - sigma * B_p(w)
  * with
  * A_p(w) = 2 (2\pi)^(p-1) (-p)! / (2 \pi)^(-p/2) (1 + w^2/(4 pi^2))^{-1/2 + p/2} cos((1 - p) ArcTan(2 pi/ w))
@@ -251,7 +286,7 @@ inline std::complex<FPType> PolyLog_Exp_neg_even(const uint n, std::complex<FPTy
     res -= pref*newterm;
     ++k;
   }
-  std::cout<<"Iterations in the series for s = -4n : "<<k<<std::endl;
+  std::cout<<"Iterations in the series for s = -4n : "<<k<<'\n';
   return res;
 }
 
@@ -300,7 +335,7 @@ inline std::complex<FPType> PolyLog_Exp_neg_odd(const uint n, std::complex<FPTyp
     res -= pref*newterm;
     ++k;
   }
-  std::cout<<"Iterations in the series for s = -(1+2*k) : "<<k<<std::endl;
+  std::cout<<"Iterations in the series for s = -(1+2*k) : "<<k<<'\n';
   return res;
 }
 
@@ -404,9 +439,9 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
  * @param w
  */
 template <typename FPType>
-inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType> w)
+std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType> w)
 {   //asymptotic expansion
-    std::cout<<"asymptotic expansions , -7 "<<std::endl;
+//    std::cout<<"asymptotic expansions , -7 "<<std::endl;
     std::complex<FPType> wgamma = std::exp((s-1.0)*std::log(w) - std::lgamma(s));/*wgamma = w^(s-1)/Gamma(s)*/
     std::complex<FPType> res = std::complex<FPType>(0.0, -M_PI)* wgamma;
     wgamma *= w/s;/*wgamma = w^s / Gamma(s+1)*/
@@ -420,7 +455,8 @@ inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType
     while (!terminate)
     {
         wgamma *= wq * (s + 1.0 - 2*k) * (s + 2.0 - 2*k);
-        newterm = mytr1::__detail::__riemann_zeta(static_cast<FPType> (2*k) ) * wgamma;
+//        newterm = mytr1::__detail::__riemann_zeta(static_cast<FPType> (2*k) ) * wgamma;
+	newterm = evenzeta<FPType>(2*k) * wgamma;
 //    std::cout<<k<<" "<<newterm<<" "<< std::endl;
         if(std::abs(newterm) > std::abs(oldterm)) terminate = true;//termination due to failure of asymptotic expansion
         if(fpequal(std::abs(res + 2.0* newterm), std::abs(res))) terminate = true; // precision goal reached.
@@ -432,7 +468,7 @@ inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType
             ++k;
         }
     }
-    std::cout<<"Iterations: "<<k<<std::endl;
+//    std::cout<<"Iterations: "<<k<<'\n';
     return res;
 }
 
