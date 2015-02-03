@@ -42,7 +42,7 @@ inline FPType evenzeta(const uint& k)
  1.0000000149015548283650412,
  1.0000000037253340247884571,   
   };
-  constexpr uint maxk = 2 * sizeof(data)/sizeof(FPType);
+  constexpr auto maxk = 2 * sizeof(data)/sizeof(FPType);
   FPType retval;
   if (k < maxk)
     retval = data[k/2];
@@ -261,7 +261,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
 template <typename FPType, int sigma>
 inline std::complex<FPType> PolyLog_Exp_neg_even(const uint n, std::complex<FPType> w)
 {
-  std::cout<<"Negative even integer s = -2k , - 4"<<std::endl;
+//  std::cout<<"Negative even integer s = -2k , - 4"<<std::endl;
   const uint np = 1+n;
   FPType lnp = std::lgamma(np);
   std::complex<FPType> res = std::exp(lnp - FPType(np) * std::log(-w));
@@ -279,14 +279,15 @@ inline std::complex<FPType> PolyLog_Exp_neg_even(const uint n, std::complex<FPTy
     pref = -pref;
   while(!terminate)
   {
-    std::complex<FPType> newterm = ( gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(2*k + 2 + n)) - 1.0)) * wup;
+//    std::complex<FPType> newterm = ( gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(2*k + 2 + n)) - 1.0)) * wup;
+    std::complex<FPType> newterm = ( gam * (evenzeta<FPType>(2*k + 2 + n) - 1.0)) * wup;
     gam *= - static_cast<FPType>(2 * k + 2 + n + 1) / (2*k + 2 + 1) * static_cast<FPType>(2*k + 2 + n) / (2 * k + 1 + 1);
     wup *= wq;
     terminate = (fpequal( std::abs(res - pref*newterm), std::abs(res) ) || (k > maxit));
     res -= pref*newterm;
     ++k;
   }
-  std::cout<<"Iterations in the series for s = -4n : "<<k<<'\n';
+//  std::cout<<"Iterations in the series for s = -4n : "<<k<<'\n';
   return res;
 }
 
@@ -298,7 +299,8 @@ inline std::complex<FPType> PolyLog_Exp_neg_even(const uint n, std::complex<FPTy
  * A_p(w) = 2 (2\pi)^(p-1) * Gamma(1-p) (1 + w^2/(4 pi^2))^{-1/2 + p/2} cos((1 - p) ArcTan(2 pi/ w))
  * and 
  * B_p(w) = 2 (2 pi)^(p-1) * \sum \limits_{k = 0}^\infty \Gamma(1 + 2k - p)/ (2k)! (-w^2/4/\pi^2)^k (Zeta(1 + 2k - p) - 1.0)
- * This is suitable for |w| < 2 pi
+ * This is suitable for |w| < 2 pi .
+ * The use of evenzeta gives a speedup of about 50
  * The original series is (This might be worthwhile if we use the already present table of the Bernoullis)
  * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} - sigma *2*(2 pi)^(p-1) * \sum \limits_{k = 0}^\infty \Gamma(1 + 2k - p)/ (2k)! (-1)^k (w/2/\pi)^(2k) Zeta(1 + 2k - p)
  * @param n the index n = 4k
@@ -307,7 +309,7 @@ inline std::complex<FPType> PolyLog_Exp_neg_even(const uint n, std::complex<FPTy
 template <typename FPType, int sigma>
 inline std::complex<FPType> PolyLog_Exp_neg_odd(const uint n, std::complex<FPType> w)
 {
-  std::cout<<"Negative odd integer s = -(1 + 2k), - 5"<<std::endl;
+//  std::cout<<"Negative odd integer s = -(1 + 2k), - 5"<<std::endl;
   const uint np = 1+n;
   FPType lnp = std::lgamma(np);
   std::complex<FPType> res = std::exp(lnp - FPType(np) * std::log(-w));
@@ -322,20 +324,21 @@ inline std::complex<FPType> PolyLog_Exp_neg_odd(const uint n, std::complex<FPTyp
   constexpr uint maxit = 300;
   FPType gam = std::exp(lnp);
   //zeroth order
-  res -= pref * gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(np)) - 1.0);
+  res -= pref * gam * (evenzeta<FPType>(np) - 1.0);
   uint k = 0;
   std::complex<FPType> wup = wq;
   while(!terminate)
   {
     uint zk = 2*k;
     gam *= static_cast<FPType>(zk + np)/(1 + zk) * static_cast<FPType>(1+zk + np) / (zk+2);
-    std::complex<FPType> newterm = ( gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(zk + 2 + np)) - 1.0)) * wup;
+//    std::complex<FPType> newterm = ( gam * (mytr1::__detail::__riemann_zeta(static_cast<FPType>(zk + 2 + np)) - 1.0)) * wup;
+    std::complex<FPType> newterm = ( gam * (evenzeta<FPType>(zk + 2 + np) - 1.0)) * wup;
     wup *= wq;
     terminate = (fpequal( std::abs(res - pref*newterm), std::abs(res) ) || (k > maxit));
     res -= pref*newterm;
     ++k;
   }
-  std::cout<<"Iterations in the series for s = -(1+2*k) : "<<k<<'\n';
+//  std::cout<<"Iterations in the series for s = -(1+2*k) : "<<k<<'\n';
   return res;
 }
 
@@ -435,13 +438,14 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
  * Don't check this against Mathematica 8.
  * For real u the imaginary part of the PolyLog is given by Im(Li_s(e^u)) = - \pi u^{s-1}/Gamma(s)
  * Check this relation for any benchmark that you use.
+ * The use of evenzeta leads to a speedup of about 1000.
  * @param s the index s
  * @param w
  */
 template <typename FPType>
 std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType> w)
 {   //asymptotic expansion
-//    std::cout<<"asymptotic expansions , -7 "<<std::endl;
+    std::cout<<"asymptotic expansions , -7 "<<std::endl;
     std::complex<FPType> wgamma = std::exp((s-1.0)*std::log(w) - std::lgamma(s));/*wgamma = w^(s-1)/Gamma(s)*/
     std::complex<FPType> res = std::complex<FPType>(0.0, -M_PI)* wgamma;
     wgamma *= w/s;/*wgamma = w^s / Gamma(s+1)*/
@@ -468,7 +472,7 @@ std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType> w)
             ++k;
         }
     }
-//    std::cout<<"Iterations: "<<k<<'\n';
+    std::cout<<"Iterations: "<<k<<'\n';
     return res;
 }
 
