@@ -109,7 +109,7 @@ std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<FPType> 
         terminate = (fpequal( std::abs(res - pref*nextterm), std::abs(res) ) || (j > maxit));
         res -= pref * nextterm;
     }
-//    std::cout<<"Iterations in Integer Series: "<<j<<'\n';
+    std::cout<<"Iterations in Integer Series: "<<j<<'\n';
     return res;
 }
 
@@ -618,9 +618,9 @@ inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, std::complex<FPType
 	  else
 	  {
           if(real(w) < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
-  {
-    return PolyLog_Exp_negative_real_part(s, w);
-  }
+          {
+	    return PolyLog_Exp_negative_real_part(s, w);
+          }
             if(real(w) < 6.0)//arbitrary transition point...
             {
 	       /*The reductions of the imaginary part yield the same results as Mathematica.
@@ -851,7 +851,7 @@ inline std::complex<FPType> PolyLog(const FPType s, std::complex<FPType> w)
 template <typename FPType>
 inline std::complex<FPType> Dirichlet_eta(std::complex<FPType> w)
 {
-    if(w.imag() == 0.0)
+    if(fpequal(imag(w), 0.0))
         return -PolyLog(w.real(), -1.0);
     else
     {   std::cout<<"Domain not (yet) supported!!"<<std::endl;
@@ -865,7 +865,7 @@ inline std::complex<FPType> Dirichlet_eta(std::complex<FPType> w)
 template <typename FPType>
 inline FPType Dirichlet_beta(std::complex<FPType> w)
 {
-    if(w.imag() == 0.0)
+    if(fpequal(imag(w), 0.0))
         return imag(PolyLog(w.real(), std::complex<FPType>(0.0, 1.0)));
     else
     {   std::cout<<"domain not (yet) supported!!"<<std::endl;
