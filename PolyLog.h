@@ -98,13 +98,13 @@ std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<FPType> 
     std::complex<FPType> w2 = upfac;
     while (!terminate)//assume uniform convergence
     {
-        FPType rzarg = static_cast<FPType>(2*j+2);
+        uint rzarg = 2*j+2;
 //        FPType rz = mytr1::__detail::__riemann_zeta(rzarg);
 	FPType rz = evenzeta<FPType>(rzarg);
 //        std::cout<<rz<<" "<<fac<<" "<<w2<<std::endl;
         std::complex<FPType> nextterm = (rz*fac)*w2;
         w2 *= upfac;
-        fac *= rzarg/(rzarg + s) * (rzarg+1.0)/(rzarg + s + 1.0);
+        fac *= rzarg/static_cast<FPType>(rzarg + s) * (rzarg+1)/static_cast<FPType>(rzarg + s + 1);
         ++j;
         terminate = (fpequal( std::abs(res - pref*nextterm), std::abs(res) ) || (j > maxit));
         res -= pref * nextterm;
@@ -836,13 +836,10 @@ template <typename FPType>
 inline std::complex<FPType> PolyLog(const FPType s, std::complex<FPType> w)
 {
   std::cout<<s<<" "<<w<<std::endl;
-    if(fpequal(arg(w), 0.0))
+    if(fpequal(imag(w), 0.0))
         return PolyLog(s, real(w));
     else
-    {
-        std::cout<<"domain not (yet) supported!!"<<std::endl;
-        std::__throw_domain_error(__N("Bad argument to PolyLog"));
-    }
+        return PolyLog_Exp(s, std::log(w));
 }
 
 /** A function to implement Dirichlet's Eta function
@@ -876,7 +873,7 @@ inline FPType Dirichlet_beta(std::complex<FPType> w)
 /** A function to implement Claussen's series Sl.
  * Notation and connection to polylog from wikipedia
  * @param w A  w
- * FIXME: Check the restriction to positive integers m
+ * FIXME: Check the restriction to positive integers m.
 */
 template <typename FPType>
 inline FPType Claussen_Sl(uint m, std::complex<FPType> w)
@@ -890,7 +887,7 @@ inline FPType Claussen_Sl(uint m, std::complex<FPType> w)
 
 /** A function to implement Claussen's series Cl
  * @param w A  w
- * FIXME: Check the restriction to positive integers m
+ * FIXME: Check the restriction to positive integers m.
 */
 template <typename FPType>
 inline FPType Claussen_Cl(uint m, std::complex<FPType> w)
