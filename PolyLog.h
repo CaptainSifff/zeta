@@ -62,9 +62,9 @@ inline FPType evenzeta(const uint& k)
  * @param w
  */
 template <typename FPType>
-inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<FPType> w)
+std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<FPType> w)
 {   //positive integer s
-    std::cout<<"Integer Series for positive s - 1"<<std::endl;
+//    std::cout<<"Integer Series for positive s - 1"<<std::endl;
     std::complex<FPType> res = mytr1::__detail::__riemann_zeta(static_cast<FPType>(s));//optimization possibility: s are positive integers
     std::complex<FPType> wpower = w;
     FPType fac = 1.0;
@@ -99,7 +99,8 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<F
     while (!terminate)//assume uniform convergence
     {
         FPType rzarg = static_cast<FPType>(2*j+2);
-        FPType rz = mytr1::__detail::__riemann_zeta(rzarg);
+//        FPType rz = mytr1::__detail::__riemann_zeta(rzarg);
+	FPType rz = evenzeta<FPType>(rzarg);
 //        std::cout<<rz<<" "<<fac<<" "<<w2<<std::endl;
         std::complex<FPType> nextterm = (rz*fac)*w2;
         w2 *= upfac;
@@ -108,7 +109,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<F
         terminate = (fpequal( std::abs(res - pref*nextterm), std::abs(res) ) || (j > maxit));
         res -= pref * nextterm;
     }
-    std::cout<<"Iterations in Integer Series: "<<j<<'\n';
+//    std::cout<<"Iterations in Integer Series: "<<j<<'\n';
     return res;
 }
 
@@ -117,6 +118,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<F
  * Li_s(e^w) = \sum_{k=0, k != s-1} \zeta(s-k) w^k/k! + (H_{s-1} - log(-w)) w^(s-1)/(s-1)!
  * The radius of convergence is |w| < 2 pi.
  * Note that this series involves a log(-x).
+ * The use of evenzeta yields a speedup of about 2.5
  * gcc and Mathematica differ in their implementation of \log(e^(i \pi)):
  * gcc: \log(e^(+- i * \pi)) = +- i \pi
  * whereas Mathematica doesn't preserve the sign in this case: \log(e^(+- i * \pi)) = +i \pi
@@ -126,7 +128,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<F
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, FPType w)
 {   //positive integer s
-    std::cout<<"Integer Series for positive s - 2 "<<std::endl;
+//    std::cout<<"Integer Series for positive s - 2 "<<std::endl;
     FPType res = mytr1::__detail::__riemann_zeta(static_cast<FPType>(s));//optimization possibility: s are positive integers
     FPType wpower = w;
     FPType fac = 1.0;
@@ -163,7 +165,8 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, FPType w)
     while (!terminate)//assume uniform convergence
     {
         FPType rzarg = static_cast<FPType>(2*j+2);
-        FPType rz = mytr1::__detail::__riemann_zeta(rzarg);
+//        FPType rz = mytr1::__detail::__riemann_zeta(rzarg);
+	FPType rz = evenzeta<FPType>(rzarg);
 //        std::cout<<rz<<" "<<fac<<" "<<w2<<std::endl;
         FPType nextterm = rz*fac*w2;
         w2 *= upfac;
@@ -172,7 +175,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, FPType w)
         terminate = (fpequal( std::abs(res - pref*nextterm), std::abs(res) ) || (j > maxit));
         res -= pref * nextterm;
     }
-    std::cout<<"Iterations in Integer Series: "<<j<<'\n';
+//    std::cout<<"Iterations in Integer Series: "<<j<<'\n';
     return std::complex<FPType>(res, imag(imagtemp));
 }
 
@@ -443,7 +446,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
  * @param w
  */
 template <typename FPType>
-std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType> w)
+inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType> w)
 {   //asymptotic expansion
     std::cout<<"asymptotic expansions , -7 "<<std::endl;
     std::complex<FPType> wgamma = std::exp((s-1.0)*std::log(w) - std::lgamma(s));/*wgamma = w^(s-1)/Gamma(s)*/
@@ -484,7 +487,7 @@ std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType> w)
  * @arg w something with a negative real part
  */
 template <typename PowerType, typename T>
-T PolyLog_Exp_negative_real_part(PowerType s, T w)
+inline T PolyLog_Exp_negative_real_part(PowerType s, T w)
 {
   std::cout<<"negative real part series (exponential) - 8"<<std::endl;
   T ew = std::exp(w);
