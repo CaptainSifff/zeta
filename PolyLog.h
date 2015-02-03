@@ -29,7 +29,7 @@ bool fpequal(const FPType& a, const FPType& b)
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<FPType> w)
 {   //positive integer s
-    std::cout<<"Integer Series for positive s"<<std::endl;
+    std::cout<<"Integer Series for positive s - 1"<<std::endl;
     std::complex<FPType> res = mytr1::__detail::__riemann_zeta(static_cast<FPType>(s));//optimization possibility: s are positive integers
     std::complex<FPType> wpower = w;
     FPType fac = 1.0;
@@ -91,7 +91,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<F
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, FPType w)
 {   //positive integer s
-    std::cout<<"Integer Series for positive s"<<std::endl;
+    std::cout<<"Integer Series for positive s - 2 "<<std::endl;
     FPType res = mytr1::__detail::__riemann_zeta(static_cast<FPType>(s));//optimization possibility: s are positive integers
     FPType wpower = w;
     FPType fac = 1.0;
@@ -153,7 +153,7 @@ template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType> w)
 {   //basic general loop, but s is a negative quantity here
     //FIXME Large s makes problems. The series should be rearrangeable so that we only need the ratio Gamma(1-s)/(2 pi)^s
-    std::cout<<"Negative real s"<<std::endl;
+    std::cout<<"Negative real s - 3"<<std::endl;
     FPType ls = std::lgamma(1.0-s);
     std::complex<FPType> res = std::exp(ls - (1.0-s) * std::log(-w));
     constexpr FPType tp = 2.0 * M_PI;
@@ -226,7 +226,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
 template <typename FPType, int sigma>
 inline std::complex<FPType> PolyLog_Exp_neg_even(const uint n, std::complex<FPType> w)
 {
-  std::cout<<"Negative even integer s = -2k"<<std::endl;
+  std::cout<<"Negative even integer s = -2k , - 4"<<std::endl;
   const uint np = 1+n;
   FPType lnp = std::lgamma(np);
   std::complex<FPType> res = std::exp(lnp - FPType(np) * std::log(-w));
@@ -272,7 +272,7 @@ inline std::complex<FPType> PolyLog_Exp_neg_even(const uint n, std::complex<FPTy
 template <typename FPType, int sigma>
 inline std::complex<FPType> PolyLog_Exp_neg_odd(const uint n, std::complex<FPType> w)
 {
-  std::cout<<"Negative odd integer s = -(1 + 2k)"<<std::endl;
+  std::cout<<"Negative odd integer s = -(1 + 2k), - 5"<<std::endl;
   const uint np = 1+n;
   FPType lnp = std::lgamma(np);
   std::complex<FPType> res = std::exp(lnp - FPType(np) * std::log(-w));
@@ -338,7 +338,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const int s, std::complex<FPType> w)
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType> w)
 {   //positive s
-    std::cout<<"Series for real positive s"<<std::endl;
+    std::cout<<"Series for real positive s - 6"<<std::endl;
     std::complex<FPType> res = mytr1::__detail::__riemann_zeta(s);
     std::complex<FPType> wpower = w;
     FPType fac = 1.0;
@@ -406,7 +406,7 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType> w)
 {   //asymptotic expansion
-    std::cout<<"asymptotic expansions"<<std::endl;
+    std::cout<<"asymptotic expansions , -7 "<<std::endl;
     std::complex<FPType> wgamma = std::exp((s-1.0)*std::log(w) - std::lgamma(s));/*wgamma = w^(s-1)/Gamma(s)*/
     std::complex<FPType> res = std::complex<FPType>(0.0, -M_PI)* wgamma;
     wgamma *= w/s;/*wgamma = w^s / Gamma(s+1)*/
@@ -439,12 +439,14 @@ inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType
 /**
  * Theoretical convergence for Re(w) < 0. Seems to beat the other expansions for Re(w) < -pi/2 - pi/5.
  * Note that this is an implementation of the basic series:
- * Li_s(e^z) = \sum_{k=1} e^k*z * k^(-s)
+ * Li_s(e^z) = \sum_{k=1} e^(k*z) * k^(-s)
+ * @arg s is an arbitrary type, Integer or float
+ * @arg w something with a negative real part
  */
 template <typename PowerType, typename T>
-T Poly_log_exp_negative_real_part(PowerType s, T w)
+T PolyLog_Exp_negative_real_part(PowerType s, T w)
 {
-  std::cout<<"negative real part series (exponential)"<<std::endl;
+  std::cout<<"negative real part series (exponential) - 8"<<std::endl;
   T ew = std::exp(w);
   const T up = ew;
   T res = ew;
@@ -454,12 +456,13 @@ T Poly_log_exp_negative_real_part(PowerType s, T w)
   while(!terminate)
   {
     ew *= up;
-    T newterm = std::pow(k, -int(s)) * ew;
+    T temp = std::pow(k, s);//This saves us a type conversion
+    T newterm = ew / temp;
     terminate = (fpequal(std::abs(res + newterm), std::abs(res))) || (k > maxiter);
     res += newterm;
     ++k;
   }
-  std::cout<<"iterations in Poly_log_exp_negative_real_part: "<<k<<std::endl;
+  std::cout<<"iterations in PolyLog_Exp_negative_real_part: "<<k<<std::endl;
   return res;
 }
 
@@ -489,7 +492,7 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, std::complex<FPTyp
 	    if(rw < -(M_PI/2.0 + M_PI/5.0)   )
 	    {
 	      //choose the exponentially converging series
-	      return Poly_log_exp_negative_real_part(s, w);
+	      return PolyLog_Exp_negative_real_part(s, w);
 	    }
             //The transition point chosen here, is quite arbitrary and needs more testing.
             if(rw < 6.0)
@@ -535,7 +538,7 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, FPType w)
 	    if(w < -(M_PI/2.0 + M_PI/5.0)   )
 	    {
 	      //choose the exponentially converging series
-	      return Poly_log_exp_negative_real_part(s, std::complex<FPType>(w));
+	      return PolyLog_Exp_negative_real_part(s, std::complex<FPType>(w));
 	    }
             //The transition point chosen here, is quite arbitrary and needs more testing.
             if(w < 6.0)
@@ -573,7 +576,7 @@ inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, std::complex<FPType
 	  {
           if(real(w) < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
   {
-    return Poly_log_exp_negative_real_part(s, w);
+    return PolyLog_Exp_negative_real_part(s, w);
   }
             if(real(w) < 6.0)//arbitrary transition point...
             {
@@ -601,7 +604,7 @@ inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, FPType w)
 {
   if(w < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
   {
-    return Poly_log_exp_negative_real_part(s, std::complex<FPType>(w));
+    return PolyLog_Exp_negative_real_part(s, std::complex<FPType>(w));
   }
   if (fpequal(w, 0.0)) return std::numeric_limits<FPType>::infinity();
   if(w < 6.0)//arbitrary transition point...
@@ -631,7 +634,7 @@ inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, std::complex<FP
     }
   if(rw < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
   {
-    return Poly_log_exp_negative_real_part(s, w);
+    return PolyLog_Exp_negative_real_part(s, w);
   }
   if(rw < 6.0)//arbitrary transition point
         {
@@ -665,7 +668,7 @@ inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, FPType w)
   }
   if(w < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
   {
-    return Poly_log_exp_negative_real_part(s, w);
+    return PolyLog_Exp_negative_real_part(s, w);
   }
   if(w < 6.0)//arbitrary transition point
   {
@@ -687,7 +690,7 @@ inline std::complex<FPType> PolyLog_Exp_real_neg(const FPType s, std::complex<FP
   FPType iw = w.imag();
   if(rw < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
   {
-    return Poly_log_exp_negative_real_part(s, w);
+    return PolyLog_Exp_negative_real_part(s, w);
   }
   if(rw < 6)//arbitrary transition point
         {
@@ -716,7 +719,7 @@ inline std::complex<FPType> PolyLog_Exp_real_neg(const FPType s, FPType w)
 {
   if(w < -(M_PI/2.0 + M_PI/5.0)   )//choose the exponentially converging series
   {
-    return Poly_log_exp_negative_real_part(s, std::complex<FPType>(w));
+    return PolyLog_Exp_negative_real_part(s, std::complex<FPType>(w));
   }
   if(w < 6)//arbitrary transition point
   {
@@ -738,7 +741,7 @@ template <typename FPType, typename ArgType>
 inline std::complex<FPType> PolyLog_Exp(const FPType s, ArgType w)
 {
   if(s > 45.0)//cutoff chosen arbitrarily. Not much testing was involved
-    return Poly_log_exp_negative_real_part(s, w);
+    return PolyLog_Exp_negative_real_part(s, w);
   std::complex<FPType> ret;
   if (fpequal<FPType>(std::rint(s), s))
     {
@@ -761,22 +764,6 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, ArgType w)
     return ret;
 }
 
-/** A function to implement the PolyLog in those cases where we can calculate it.
- * @param s The index s
- * @param w A complex w
- */
-template <typename FPType>
-inline std::complex<FPType> PolyLog(const FPType s, std::complex<FPType> w)
-{
-    if(fpequal(arg(w), 0.0))
-        return PolyLog(s, real(w));
-    else
-    {
-        std::cout<<"domain not (yet) supported!!"<<std::endl;
-        std::__throw_domain_error(__N("Bad argument to PolyLog"));
-    }
-}
-
 /** A function to implement the PolyLog for two real arguments.
  * @param s The index s
  * @param x A real x
@@ -795,6 +782,23 @@ inline std::complex<FPType> PolyLog(const FPType s, FPType x)
     {
         FPType y = std::log(x);
         return PolyLog_Exp(s, y);
+    }
+}
+
+/** A function to implement the PolyLog in those cases where we can calculate it.
+ * @param s The index s
+ * @param w A complex w
+ */
+template <typename FPType>
+inline std::complex<FPType> PolyLog(const FPType s, std::complex<FPType> w)
+{
+  std::cout<<s<<" "<<w<<std::endl;
+    if(fpequal(arg(w), 0.0))
+        return PolyLog(s, real(w));
+    else
+    {
+        std::cout<<"domain not (yet) supported!!"<<std::endl;
+        std::__throw_domain_error(__N("Bad argument to PolyLog"));
     }
 }
 
