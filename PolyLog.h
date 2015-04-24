@@ -119,7 +119,7 @@ std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<FPType> 
  * Li_s(e^w) = \sum_{k=0, k != s-1} \zeta(s-k) w^k/k! + (H_{s-1} - log(-w)) w^(s-1)/(s-1)!
  * The radius of convergence is |w| < 2 pi.
  * Note that this series involves a log(-x).
- * The use of evenzeta yields a speedup of about 2.5
+ * The use of evenzeta yields a speedup of about 2.5.
  * gcc and Mathematica differ in their implementation of \log(e^(i \pi)):
  * gcc: \log(e^(+- i * \pi)) = +- i \pi
  * whereas Mathematica doesn't preserve the sign in this case: \log(e^(+- i * \pi)) = +i \pi
@@ -186,8 +186,9 @@ inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, FPType w)
  * We use an optimized version of
  * Li_s(e^w) = Gamma(1-s)*(-w)^(s-1) + (2*pi)^(-s)/pi * A_p(w)
  * A_p(w)= \sum_k Gamma(1+k-s)/k!*Sin(pi/2*(s-k))*(w/2/\pi)^k*zeta(1+k-s)
- * @param s the index s
- * @param w
+ * @param s the index s.
+ * @param w The Argument w.
+ * @return the value of the Polylogarithm.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType> w)
@@ -219,7 +220,7 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
     constexpr unsigned int maxit = 200;
     unsigned int j = 1;
     bool terminate = false;
-    gam*= (1.0 - s);
+    gam *= (1.0 - s);
     while (!terminate)//assume uniform convergence
     {
         FPType rzarg = (1.0 - s) + j;
@@ -260,8 +261,9 @@ inline std::complex<FPType> PolyLog_Exp_neg(const FPType s, std::complex<FPType>
  * This is suitable for |w| < 2 pi
  * The original series is (This might be worthwhile if we use the already present table of the Bernoullis)
  * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} - sigma (2 pi)^p / pi * \sum \limits_{k = 0}^\infty \Gamma(2 + 2k - p)/ (2k+1)! (-1)^k (w/2/\pi)^(2k+1) Zeta(2 + 2k - p)
- * @param n the index n = 4k
- * @param w
+ * @param n the index n = 4k.
+ * @param w The Argument w
+ * @return the value of the Polylogarithm.
  */
 template <typename FPType, int sigma>
 inline std::complex<FPType> PolyLog_Exp_neg_even(const uint n, std::complex<FPType> w)
@@ -308,8 +310,9 @@ inline std::complex<FPType> PolyLog_Exp_neg_even(const uint n, std::complex<FPTy
  * The use of evenzeta gives a speedup of about 50
  * The original series is (This might be worthwhile if we use the already present table of the Bernoullis)
  * Li_p(e^w) = Gamma(1-p) * (-w)^{p-1} - sigma *2*(2 pi)^(p-1) * \sum \limits_{k = 0}^\infty \Gamma(1 + 2k - p)/ (2k)! (-1)^k (w/2/\pi)^(2k) Zeta(1 + 2k - p)
- * @param n the index n = 4k
- * @param w
+ * @param n the index n = 4k.
+ * @param w The Argument w.
+ * @return The value of the Polylogarithm.
  */
 template <typename FPType, int sigma>
 inline std::complex<FPType> PolyLog_Exp_neg_odd(const uint n, std::complex<FPType> w)
@@ -347,9 +350,10 @@ inline std::complex<FPType> PolyLog_Exp_neg_odd(const uint n, std::complex<FPTyp
   return res;
 }
 
-/** This function catches the cases of negative integer index s
- * @param s the index s
- * @param w
+/** This function catches the cases of negative integer index s and branches accordingly
+ * @param s the integer index s.
+ * @param w The Argument w
+ * @return The value of the Polylogarithm evaluated by a suitable function.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_neg(const int s, std::complex<FPType> w)
@@ -375,8 +379,9 @@ inline std::complex<FPType> PolyLog_Exp_neg(const int s, std::complex<FPType> w)
  * with
  * A_s(w) = \sum_{k=0}^{m} \zeta(s-k)w^k/k!
  * B_s(w) = \sum_{k=m+1}^\infty \sin(\pi/2(s-k)) \Gamma(1-s+k)\zeta(1-s+k) (w/2/\pi)^k/k!
- * @param s the index s
- * @param w
+ * @param s the positive real index s.
+ * @param w The argument w.
+ * @return the value of the Polylogarithm.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType> w)
@@ -443,8 +448,9 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
  * For real u the imaginary part of the PolyLog is given by Im(Li_s(e^u)) = - \pi u^{s-1}/Gamma(s)
  * Check this relation for any benchmark that you use.
  * The use of evenzeta leads to a speedup of about 1000.
- * @param s the index s
- * @param w
+ * @param s the index s.
+ * @param w the large argument w.
+ * @return the value of the polylogarithm.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType> w)
@@ -484,8 +490,9 @@ inline std::complex<FPType> PolyLog_Exp_asym(const FPType s, std::complex<FPType
  * Theoretical convergence for Re(w) < 0. Seems to beat the other expansions for Re(w) < -pi/2 - pi/5.
  * Note that this is an implementation of the basic series:
  * Li_s(e^z) = \sum_{k=1} e^(k*z) * k^(-s)
- * @param s is an arbitrary type, Integer or float
- * @param w something with a negative real part
+ * @param s is an arbitrary type, Integer or float.
+ * @param w something with a negative real part.
+ * @return the value of the polylogarithm.
  */
 template <typename PowerType, typename T>
 inline T PolyLog_Exp_negative_real_part(PowerType s, T w)
@@ -510,7 +517,10 @@ inline T PolyLog_Exp_negative_real_part(PowerType s, T w)
   return res;
 }
 
-/* This is the case where s is a positive integer.
+/** Here s is a positive integer and the function descends into the different kernels depending on w.
+ * @param s a positive integer.
+ * @param w an arbitrary complex number.
+ * @return The value of the polylogarithm.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, std::complex<FPType> w)
@@ -558,7 +568,10 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, std::complex<FPTyp
         }
 }
 
-/* This is the case where s is a positive integer. And w is supposed to be a real
+/** Here s is a positive integer and the function descends into the different kernels depending on w.
+ * @param s a positive integer
+ * @param w an arbitrary real argument w
+ * @return the value of the polylogarithm.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, FPType w)
@@ -596,7 +609,10 @@ inline std::complex<FPType> PolyLog_Exp_int_pos(const uint s, FPType w)
         }
 }
 
-/* This is the case where s is a negative integer.
+/** This is the case where s is a negative integer.
+ * @param s a negative integer.
+ * @param w an arbitrary complex number
+ * @return the value of the polylogarith,.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, std::complex<FPType> w)
@@ -641,7 +657,10 @@ inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, std::complex<FPType
 	  }
 }
 
-/* This is the case where s is a negative integer. and w is a real
+/** This is the case where s is a negative integer. and w is a real.
+ * @param s a negative integer.
+ * @param w the argument.
+ * @return the value of the polylogarithm.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, FPType w)
@@ -662,7 +681,10 @@ inline std::complex<FPType> PolyLog_Exp_int_neg(const int s, FPType w)
   }
 }
 
-/* This is the case where s is a positive real value.
+/** This is the case where s is a positive real value.
+ * @param s a positive real number.
+ * @param w the argument.
+ * @return the value of the polylogarithm.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, std::complex<FPType> w)
@@ -698,7 +720,10 @@ inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, std::complex<FP
         }
 }
 
-/* This is the case where s is a positive real value. and w is a plain real.
+/** This is the case where s is a positive real value. and w is a plain real.
+ * @param s a positive real number tht does not reduce to an integer.
+ * @param w the real argument w.
+ * @return the value of the polylogarithm.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, FPType w)
@@ -724,8 +749,11 @@ inline std::complex<FPType> PolyLog_Exp_real_pos(const FPType s, FPType w)
   }
 }
 
-/* This is the case where s is a negative real value.
+/** This is the case where s is a negative real value.
  * Now we branch depending on the properties of w in the specific functions
+ * @param s a negative real value that does not reduce to a negative integer.
+ * @param w the complex argument.
+ * @return the value of the polylogarithm.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_real_neg(const FPType s, std::complex<FPType> w)
@@ -754,9 +782,11 @@ inline std::complex<FPType> PolyLog_Exp_real_neg(const FPType s, std::complex<FP
         }
 }
 
-/* This is the case where s is a negative real value.
+/** This is the case where s is a negative real value.
  * Now we branch depending on the properties of w in the specific functions.
- * w is a real quantity
+ * @param s a negative real value.
+ * @param w a real argument.
+ * @return the value of the polylogarithm.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_real_neg(const FPType s, FPType w)
@@ -778,8 +808,8 @@ inline std::complex<FPType> PolyLog_Exp_real_neg(const FPType s, FPType w)
 /** This is the frontend function which calculates Li_s( e^w )
  * First we branch into different parts depending on the properties of s.
  * This function is the same irrespective of a real or complex w, hence the template parameter ArgType.
- * @param s the index s
- * @param w complex w
+ * @param s the index s.
+ * @param w complex w.
  * @return the value of Li_s(e^w).
  */
 template <typename FPType, typename ArgType>
@@ -810,8 +840,9 @@ inline std::complex<FPType> PolyLog_Exp(const FPType s, ArgType w)
 }
 
 /** A function to implement the PolyLog for two real arguments.
- * @param s The index s
- * @param x A real x
+ * @param s The index s.
+ * @param x A real x.
+ * @return The possibly complex value of the polylogarithm.
 */
 template <typename FPType>
 inline std::complex<FPType> PolyLog(const FPType s, FPType x)
@@ -831,21 +862,22 @@ inline std::complex<FPType> PolyLog(const FPType s, FPType x)
 }
 
 /** A function to implement the PolyLog in those cases where we can calculate it.
- * @param s The index s
- * @param w A complex w
+ * @param s The index s.
+ * @param w A complex w.
+ * @return The complex value of the polylogarithm.
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog(const FPType s, std::complex<FPType> w)
 {
-  std::cout<<s<<" "<<w<<std::endl;
     if(fpequal(imag(w), 0.0))
         return PolyLog(s, real(w));
     else
         return PolyLog_Exp(s, std::log(w));
 }
 
-/** A function to implement Dirichlet's Eta function
+/** A function to implement Dirichlet's Eta function.
  * @param w A w
+ * @return if w lacks an imaginary patr we calculate the value, else we throw an exception.
 */
 template <typename FPType>
 inline std::complex<FPType> Dirichlet_eta(std::complex<FPType> w)
@@ -858,8 +890,9 @@ inline std::complex<FPType> Dirichlet_eta(std::complex<FPType> w)
     }
 }
 
-/** A function to implement Dirichlet's beta function
+/** A function to implement Dirichlet's beta function.
  * @param w A w
+ * @return if w lacks an imaginary part, we calculate the value, else we throw an exception.
 */
 template <typename FPType>
 inline FPType Dirichlet_beta(std::complex<FPType> w)
@@ -874,7 +907,8 @@ inline FPType Dirichlet_beta(std::complex<FPType> w)
 
 /** A function to implement Claussen's series Sl.
  * Notation and connection to polylog from wikipedia
- * @param w A  w
+ * @param w the argument w.
+ * @return Sl_m(w),
  * FIXME: Check the restriction to positive integers m.
 */
 template <typename FPType>
@@ -888,7 +922,8 @@ inline FPType Claussen_Sl(uint m, std::complex<FPType> w)
 }
 
 /** A function to implement Claussen's series Cl
- * @param w A  w
+ * @param w the argument w.
+ * @return Cl_m(w),
  * FIXME: Check the restriction to positive integers m.
 */
 template <typename FPType>
