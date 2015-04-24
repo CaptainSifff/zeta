@@ -382,6 +382,9 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
     std::cout<<"Series for real positive s - 6"<<std::endl;
     std::complex<FPType> res = mytr1::__detail::__riemann_zeta(s);
     std::complex<FPType> wpower = w;
+    FPType sp, cp;
+    sincos(M_PI/2.0 * s, &sp, &cp);
+    res += M_PI/(2.0*sp*cp)*std::exp(-std::lgamma(s)+(s-1.0) * std::log(-w));//This is \Gamma(1-s)(-w)^(s-1)
     FPType fac = 1.0;
     const uint m = static_cast<uint>(std::floor(s));
     for (uint k = 1; k <= m; ++k)
@@ -391,21 +394,17 @@ inline std::complex<FPType> PolyLog_Exp_pos(const FPType s, std::complex<FPType>
         FPType temp = 1.0/(1.0 + k);
         fac *= temp;
     }
-    //fac should be 1/(m+1)!
-    //We revert here to the plain evaluation of the Gamma function instead of lgamma since we require evaluation at negative values.
-    res += std::tgamma(1.0-s)*std::pow(-w, s-1.0);
-    const FPType tp = 2.0 * M_PI;
+    //fac should now be 1/(m+1)!
+    constexpr FPType tp = 2.0 * M_PI;
     const FPType pref = 2.0 * std::pow(tp, s-1);
     //now comes the remainder of the series
-    const unsigned int maxit = 100;
+    constexpr unsigned int maxit = 100;
     unsigned int j = 0;
     bool terminate = false;
     std::complex<FPType> wup = w/tp;
     std::complex<FPType> w2 = std::pow(wup, m+1);
     //It is 1 < 2 - s + m < 2 => Gamma(2-s+m) will not overflow
     FPType gam = std::tgamma(2.0-s+m)*fac; //here we factor up the ratio of Gamma(1 - s + k)/k! . This ratio should be well behaved even for large k
-    FPType sp, cp;
-    sincos(M_PI/2.0 * s, &sp, &cp);
     while (!terminate)//assume uniform convergence
     {   //FIXME: optimize.
         int idx = m + 1 + j;
