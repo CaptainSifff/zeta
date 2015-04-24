@@ -3,8 +3,8 @@
 
 /**
  * A function to reliably compare two floating point numbers.
- * @param a
- * @param b
+ * @param a the left hand side.
+ * @param b the right hand side
  * @return returns true if a and b are equal to zero or differ only by max(a,b)* 5* eps
  * */
 template <typename FPType>
@@ -18,7 +18,7 @@ bool fpequal(const FPType& a, const FPType& b)
 
 /**
  * A function to calculate the values of zeta at even positive integers. For values smaller than thirty a table is used.
- * @param k 
+ * @param k an integer at which we evaluate the Riemann zeta function.
  * @return zeta(k)
  */
 template <typename FPType = double> 
@@ -58,8 +58,9 @@ inline FPType evenzeta(const uint& k)
  * gcc and Mathematica differ in their implementation of \log(e^(i \pi)):
  * gcc: \log(e^(+- i * \pi)) = +- i \pi
  * whereas Mathematica doesn't preserve the sign in this case: \log(e^(+- i * \pi)) = +i \pi
- * @param s the index s
- * @param w
+ * @param s the index s.
+ * @param w the argument w.
+ * @return the value of the PolyLogarithm.
  */
 template <typename FPType>
 std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<FPType> w)
@@ -122,8 +123,9 @@ std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, std::complex<FPType> 
  * gcc and Mathematica differ in their implementation of \log(e^(i \pi)):
  * gcc: \log(e^(+- i * \pi)) = +- i \pi
  * whereas Mathematica doesn't preserve the sign in this case: \log(e^(+- i * \pi)) = +i \pi
- * @param s the index s
- * @param w
+ * @param s the index s.
+ * @param w the argument w
+ * @return the value of the Polylogarithm
  */
 template <typename FPType>
 inline std::complex<FPType> PolyLog_Exp_pos(const unsigned int s, FPType w)
@@ -783,7 +785,7 @@ inline std::complex<FPType> PolyLog_Exp_real_neg(const FPType s, FPType w)
 template <typename FPType, typename ArgType>
 inline std::complex<FPType> PolyLog_Exp(const FPType s, ArgType w)
 {
-  if(s > 45.0)//cutoff chosen arbitrarily. Not much testing was involved
+  if(s > 25.0)//cutoff chosen by some testing on the real axis.
     return PolyLog_Exp_negative_real_part(s, w);
   std::complex<FPType> ret;
   if (fpequal<FPType>(std::rint(s), s))
